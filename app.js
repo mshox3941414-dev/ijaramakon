@@ -1138,3 +1138,4 @@ function renderAddOptions() {
 
     list.appendChild(btn);
   });
+}

@@ -3,308 +3,207 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-  <title>IjaraMakon</title>
-
-  <link rel="https://mshox3941414-dev.github.io/ijaramakon/" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1769e0">
+  <title>IjaraMakon — Xorazm</title>
+  <link rel="stylesheet" href="./style.css?v=10">
+  <script src="./app.js?v=10" defer></script>
 </head>
-
 <body>
-
-<!-- BOSH SAHIFA -->
-<section id="homePage" class="page">
-
-  <header class="home-header">
-    <h1>🏠 IjaraMakon</h1>
-    <p>Xorazm bo'ylab ijara uylari</p>
+  <header class="header">
+    <div class="brand">
+      <span class="brand-icon">🏠</span>
+      <div>
+        <strong>IjaraMakon</strong>
+        <small>Xorazm bo'ylab ijara uylari</small>
+      </div>
+    </div>
+    <span class="header-status">● Onlayn</span>
   </header>
 
-  <main class="home-content">
-
-    <h2>Xush kelibsiz!</h2>
-    <p>O'zingizga mos uy toping</p>
-
-    <button class="home-btn primary"
-            onclick="showPage('searchPage')">
-      🔎 Uy qidirish
-    </button>
-
-    <button class="home-btn"
-            onclick="showPage('addPage')">
-      ➕ E'lon berish
-    </button>
-
-    <button class="home-btn"
-            onclick="showPage('savedPage')">
-      ❤️ Saqlanganlar
-    </button>
-
-    <button class="home-btn"
-            onclick="showPage('profilePage')">
-      👤 Mening profilim
-    </button>
-
-  </main>
-</section>
-
-
-<!-- UY QIDIRISH SAHIFASI -->
-<section id="searchPage" class="page" hidden>
-
-  <div class="topbar">
-    <button onclick="showPage('homePage')">
-      ← Orqaga
-    </button>
-    <h2>🔎 Uy qidirish</h2>
-  </div>
-
   <main class="container">
-    <div class="search-card">
+    <nav class="main-nav" aria-label="Asosiy menyu">
+      <button class="nav-btn active" data-page="home">🏠 Bosh sahifa</button>
+      <button class="nav-btn" data-page="search">🔎 Uy qidirish</button>
+      <button class="nav-btn" data-page="add">➕ E'lon berish</button>
+      <button class="nav-btn" data-page="saved">❤️ Saqlangan</button>
+      <button class="nav-btn" data-page="profile">👤 Mening profilim</button>
+      <button class="nav-btn" data-page="admin">🛡️ Admin panel</button>
+    </nav>
 
-      <h2>🔎 Uy qidirish</h2>
-      <p>Kerakli ma'lumotlarni tanlang</p>
-
-      <label>Viloyat</label>
-      <div class="fixed-region">
-        📍 Xorazm viloyati
+    <section id="home" class="page active">
+      <div class="welcome">
+        <span class="welcome-icon">🏡</span>
+        <h1>IjaraMakon'ga xush kelibsiz!</h1>
+        <p>Xorazm bo'ylab ijara uylarini qulay qidiring va e'lon joylashtiring.</p>
       </div>
+      <div class="section-heading">
+        <h2>So'nggi e'lonlar</h2>
+        <button class="text-btn" data-page="search">Barchasi →</button>
+      </div>
+      <div id="latestListings" class="listing-grid"></div>
+    </section>
 
-      <label>Tuman yoki shahar</label>
-      <button id="districtPicker"
-              class="picker-btn"
-              onclick="openPicker('district')">
-        🏛️ Barcha hududlar
-      </button>
-      <input type="hidden" id="district">
+    <section id="search" class="page">
+      <div class="page-title">
+        <h1>🔎 Uy qidirish</h1>
+        <p>O'zingizga mos ijara uyini toping</p>
+      </div>
+      <div class="panel">
+        <div class="form-grid">
+          <div class="field">
+            <label for="searchDistrict">Tuman yoki shahar</label>
+            <select id="searchDistrict"></select>
+          </div>
+          <div class="field">
+            <label for="searchMahalla">Mahalla</label>
+            <select id="searchMahalla"></select>
+          </div>
+          <div class="field">
+            <label for="searchType">Uy turi</label>
+            <select id="searchType"></select>
+          </div>
+          <div class="field">
+            <label for="searchRooms">Xonalar soni</label>
+            <select id="searchRooms"></select>
+          </div>
+          <div class="field">
+            <label for="searchRepair">Ta'mir holati</label>
+            <select id="searchRepair"></select>
+          </div>
+          <div class="field">
+            <label for="searchMaxPrice">Eng yuqori narx (so'm)</label>
+            <input id="searchMaxPrice" type="number" min="0" placeholder="Masalan: 2000000">
+          </div>
+        </div>
+        <div class="button-row">
+          <button id="searchButton" class="primary-btn">🔎 Uylarni ko'rsatish</button>
+          <button id="resetSearch" class="secondary-btn">✕ Tozalash</button>
+        </div>
+      </div>
+      <div class="section-heading">
+        <h2>Topilgan e'lonlar</h2>
+        <span id="resultCount" class="counter">0 ta</span>
+      </div>
+      <div id="searchResults" class="listing-grid"></div>
+    </section>
 
-      <label>Mahalla</label>
-      <button id="mahallaPicker"
-              class="picker-btn"
-              onclick="openPicker('mahalla')">
-        📍 Barcha mahallalar
-      </button>
-      <input type="hidden" id="mahalla">
-
-      <label>Uy turi</label>
-      <button id="houseTypePicker"
-              class="picker-btn"
-              onclick="openPicker('houseType')">
-        🏠 Barcha uy turlari
-      </button>
-      <input type="hidden" id="houseType">
-
-      <label>Xonalar soni</label>
-      <button id="roomsPicker"
-              class="picker-btn"
-              onclick="openPicker('rooms')">
-        🚪 Farqi yo'q
-      </button>
-      <input type="hidden" id="rooms">
-
-      <label>Remont holati</label>
-      <button id="repairPicker"
-              class="picker-btn"
-              onclick="openPicker('repair')">
-        🛠️ Farqi yo'q
-      </button>
-      <input type="hidden" id="repair">
-
-      <label>Maksimal narx (so'm)</label>
-      <button id="pricePicker"
-              class="picker-btn"
-              onclick="openPricePicker()">
-        💰 Narx tanlanmagan
-      </button>
-      <input type="hidden" id="maxPrice">
-
-      <button class="search-btn"
-              onclick="searchHouses()">
-        🔎 Uylarni ko'rsatish
-      </button>
-
-      <div id="results"></div>
-
-    </div>
-  </main>
-</section>
-
-
-<!-- E'LON BERISH SAHIFASI: mavjud addPage section o'rniga qo'ying -->
-<section id="addPage" class="page" hidden>
-  <div class="topbar">
-    <button type="button" onclick="showPage('homePage')">← Orqaga</button>
-    <h2>➕ E'lon berish</h2>
-  </div>
-  <main class="container">
-    <div class="search-card">
-      <h2>🏠 Yangi e'lon</h2>
-      <p>Uyingiz haqidagi ma'lumotlarni kiriting</p>
-      <form id="addHouseForm">
-        <label for="addDistrictPicker">Tuman yoki shahar</label>
-        <button type="button" id="addDistrictPicker" class="picker-btn" onclick="openAddPicker('district')">🏛️ Tuman yoki shaharni tanlang</button>
-        <input type="hidden" id="addDistrict" value="">
-
-        <label for="addMahallaPicker">Mahalla</label>
-        <button type="button" id="addMahallaPicker" class="picker-btn" onclick="openAddPicker('mahalla')">📍 Mahallani tanlang</button>
-        <input type="hidden" id="addMahalla" value="">
-
-        <label for="addHouseTypePicker">Uy turi</label>
-        <button type="button" id="addHouseTypePicker" class="picker-btn" onclick="openAddPicker('houseType')">🏠 Uy turini tanlang</button>
-        <input type="hidden" id="addHouseType" value="">
-
-        
-<label for="addRoomsPicker">Xonalar soni</label>
-<button type="button"
-        id="addRoomsPicker"
-        class="picker-btn"
-        onclick="openAddPicker('rooms')">
-  🚪 Xonalar sonini tanlang
-</button>
-<input type="hidden" id="addRooms" value="">
-
-
-        <label for="addRepairPicker">Remont holati</label>
-        <button type="button" id="addRepairPicker" class="picker-btn" onclick="openAddPicker('repair')">🛠️ Remont holatini tanlang</button>
-        <input type="hidden" id="addRepair" value="">
-
-        <label for="addPrice">Oylik ijara narxi (so'm)</label>
-        <input id="addPrice" type="number" min="1" required placeholder="Masalan: 1500000">
-
-        <label for="addPhone">Telefon raqam</label>
-        <input id="addPhone" type="tel" required placeholder="+998 XX XXX XX XX">
-
-        <label for="addDescription">Qo'shimcha ma'lumot</label>
-        <textarea id="addDescription" rows="4" placeholder="Uy haqida ma'lumot"></textarea>
-
-        <label for="addPhotos">Uy rasmlari</label>
-        <input id="addPhotos" type="file" accept="image/*" multiple>
-
-        <button type="submit" class="search-btn">➕ E'lonni yuborish</button>
+    <section id="add" class="page">
+      <div class="page-title">
+        <h1>➕ E'lon berish</h1>
+        <p>Uy ma'lumotlarini to'ldiring. E'lon admin tasdig'idan keyin chiqadi.</p>
+      </div>
+      <form id="listingForm" class="panel">
+        <div class="form-grid">
+          <div class="field">
+            <label for="addDistrict">Tuman yoki shahar *</label>
+            <select id="addDistrict" required></select>
+          </div>
+          <div class="field">
+            <label for="addMahalla">Mahalla *</label>
+            <select id="addMahalla" required></select>
+          </div>
+          <div class="field">
+            <label for="addType">Uy turi *</label>
+            <select id="addType" required></select>
+          </div>
+          <div class="field">
+            <label for="addRooms">Xonalar soni *</label>
+            <select id="addRooms" required></select>
+          </div>
+          <div class="field">
+            <label for="addRepair">Ta'mir holati *</label>
+            <select id="addRepair" required></select>
+          </div>
+          <div class="field">
+            <label for="addPrice">Oylik ijara narxi (so'm) *</label>
+            <input id="addPrice" type="number" min="1" required placeholder="1500000">
+          </div>
+          <div class="field">
+            <label for="addPhone">Telefon raqami *</label>
+            <input id="addPhone" type="tel" required placeholder="+998901234567">
+          </div>
+          <div class="field">
+            <label for="addImage">Uy rasmi</label>
+            <input id="addImage" type="file" accept="image/jpeg,image/png,image/webp">
+          </div>
+        </div>
+        <div class="field">
+          <label for="addAddress">Manzil *</label>
+          <input id="addAddress" maxlength="200" required placeholder="Ko'cha, mo'ljal">
+        </div>
+        <div class="field">
+          <label for="addDescription">Qo'shimcha ma'lumot</label>
+          <textarea id="addDescription" rows="4" maxlength="2000" placeholder="Uy sharoitlari haqida yozing"></textarea>
+        </div>
+        <button class="primary-btn full-btn" type="submit">📤 E'lonni yuborish</button>
       </form>
-      <p id="addMessage"></p>
-    </div>
-  </main>
-</section>
+    </section>
 
-
-<!-- SAQLANGANLAR SAHIFASI -->
-<section id="savedPage" class="page" hidden>
-
-  <div class="topbar">
-    <button onclick="showPage('homePage')">
-      ← Orqaga
-    </button>
-    <h2>❤️ Saqlanganlar</h2>
-  </div>
-
-  <main class="container">
-    <div class="search-card">
-      <h2>❤️ Saqlangan uylar</h2>
-      <div id="savedResults">
-        <p>Hozircha saqlangan uylar yo'q.</p>
+    <section id="saved" class="page">
+      <div class="page-title">
+        <h1>❤️ Saqlangan e'lonlar</h1>
+        <p>Tanlangan uylaringiz shu yerda ko'rinadi</p>
       </div>
-    </div>
-  </main>
-</section>
+      <div id="savedListings" class="listing-grid"></div>
+    </section>
 
-
-<!-- MENING PROFILIM -->
-<section id="profilePage" class="page" hidden>
-
-  <div class="topbar">
-    <button onclick="showPage('homePage')">
-      ← Orqaga
-    </button>
-    <h2>👤 Mening profilim</h2>
-  </div>
-
-  <main class="container">
-    <div class="search-card">
-
-      <h2>👤 Shaxsiy profil</h2>
-
-      <label for="profileName">Ismingiz</label>
-      <input id="profileName"
-             type="text"
-             placeholder="Ismingizni kiriting">
-
-      <label for="profilePhone">Telefon raqamingiz</label>
-      <input id="profilePhone"
-             type="tel"
-             placeholder="+998 XX XXX XX XX">
-
-      <button class="search-btn"
-              onclick="saveProfile()">
-        💾 Profilni saqlash
-      </button>
-
-      <p id="profileMessage"></p>
-
-      <h3>📋 Mening e'lonlarim</h3>
-      <div id="myHouses">
-        <p>Hozircha e'lonlaringiz yo'q.</p>
+    <section id="profile" class="page">
+      <div class="page-title">
+        <h1>👤 Mening profilim</h1>
+        <p>Ma'lumotlaringiz va e'lonlaringiz</p>
       </div>
+      <form id="profileForm" class="panel">
+        <div class="field">
+          <label for="profileName">Ismingiz</label>
+          <input id="profileName" required maxlength="100" placeholder="Ismingiz">
+        </div>
+        <div class="field">
+          <label for="profilePhone">Telefon raqamingiz</label>
+          <input id="profilePhone" required type="tel" placeholder="+998901234567">
+        </div>
+        <button class="primary-btn" type="submit">💾 Profilni saqlash</button>
+      </form>
+      <div class="section-heading">
+        <h2>Mening e'lonlarim</h2>
+      </div>
+      <div id="myListings" class="listing-grid"></div>
+    </section>
 
-    </div>
+    <section id="admin" class="page">
+      <div class="page-title">
+        <h1>🛡️ Admin panel</h1>
+        <p>E'lonlarni tekshirish va boshqarish</p>
+      </div>
+      <div id="adminLogin" class="panel">
+        <div class="field">
+          <label for="adminPassword">Admin paroli</label>
+          <input id="adminPassword" type="password" autocomplete="current-password">
+        </div>
+        <button id="adminLoginButton" class="primary-btn">Kirish</button>
+      </div>
+      <div id="adminContent" class="hidden">
+        <div class="button-row">
+          <button id="adminRefresh" class="secondary-btn">🔄 Yangilash</button>
+          <button id="adminLogout" class="secondary-btn">Chiqish</button>
+        </div>
+        <div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>
+        <div id="pendingListings" class="listing-grid"></div>
+        <div class="section-heading"><h2>Barcha e'lonlar</h2></div>
+        <div id="adminListings" class="listing-grid"></div>
+      </div>
+    </section>
   </main>
-</section>
 
-
-<!-- TANLASH OYNASI -->
-<div id="pickerModal" class="modal" hidden>
-
-  <div class="modal-panel">
-
-    <div class="modal-header">
-      <h3 id="modalTitle">Tanlang</h3>
-
-      <button onclick="closePicker()">
-        ✕
-      </button>
+  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="E'lon ma'lumotlari">
+    <div class="modal-box">
+      <button id="closeDetail" class="close-btn" aria-label="Yopish">✕</button>
+      <div id="detailContent"></div>
     </div>
-
-    <input id="modalSearch"
-           type="search"
-           placeholder="Qidirish..."
-           oninput="filterOptions()">
-
-    <div id="modalList"></div>
-
   </div>
-</div>
 
+  <div id="toast" class="toast hidden" role="status"></div>
 
-<!-- NARX OYNASI -->
-<div id="priceModal" class="modal" hidden>
-
-  <div class="modal-panel price-panel">
-
-    <h3>💰 Maksimal narx</h3>
-
-    <input id="priceInput"
-           type="number"
-           min="0"
-           placeholder="Narxni kiriting">
-
-    <div class="price-actions">
-
-      <button onclick="closePricePicker()">
-        Bekor qilish
-      </button>
-
-      <button onclick="savePrice()">
-        Saqlash
-      </button>
-
-    </div>
-
-  </div>
-</div>
-
-
-<script src="app.js"></script>
-
+  <footer class="footer">© 2026 IjaraMakon — Xorazm</footer>
 </body>
 </html>

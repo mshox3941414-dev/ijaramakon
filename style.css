@@ -314,3 +314,17 @@ textarea:focus,
 .page[hidden] {
   display: none !important;
 }
+
+/* IJARAMAKON - SAHIFALAR KO'RINISHINI TUZATISH */
+
+.page {
+  display: none;
+}
+
+.page:not([hidden]) {
+  display: block;
+}
+
+#homePage[hidden] {
+  display: none !important;
+}

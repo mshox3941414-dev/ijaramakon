@@ -328,3 +328,89 @@ textarea:focus,
 #homePage[hidden] {
   display: none !important;
 }
+
+/* IJARAMAKON — YANGILANGAN DIZAYN */
+
+:root {
+  --primary: #1769e0;
+  --primary-light: #eaf3ff;
+  --background: #f4f7fc;
+  --text: #172b4d;
+  --border: #dce5f1;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+.home-header {
+  background: linear-gradient(135deg, #1769e0, #4096ff);
+  color: white;
+  padding: 24px 18px;
+  border-radius: 0 0 22px 22px;
+}
+
+.search-card {
+  background: white;
+  padding: 18px;
+  margin: 14px;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(20, 65, 120, 0.08);
+}
+
+.picker-btn,
+select,
+input,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.picker-btn {
+  text-align: left;
+  cursor: pointer;
+}
+
+.picker-btn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #93c5fd;
+  border-color: var(--primary);
+}
+
+.home-btn {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--primary);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button {
+  font-family: inherit;
+}
+
+button:active {
+  opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+  .search-card {
+    margin: 10px;
+    padding: 14px;
+  }
+}

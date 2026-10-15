@@ -305,3 +305,12 @@ textarea:focus,
     border-radius: 18px 18px 0 0;
   }
 }
+
+/* IjaraMakon bosh sahifasini ko'rsatish */
+#homePage {
+  display: block;
+}
+
+.page[hidden] {
+  display: none !important;
+}

@@ -24,9 +24,6 @@ const districts = [
   "Yangibozor tumani"
 ];
 
-// Mahallalar to'liq ro'yxati keyin qo'shiladi.
-// Hozir tumanlar ishlaydi.
-const mahallalar = {};
 
 const houseTypes = [
   "Yer uchastkali uy",

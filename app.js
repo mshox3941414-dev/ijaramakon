@@ -929,3 +929,420 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadListings();
 });
+// IJARAMAKON — OQ-KO'K TANLASH OYNALARINI TIKLASH
+(() => {
+  function initPickers() {
+    if (document.getElementById("imPickerRestore")) return;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .im-original-select {
+        position:absolute!important;
+        width:1px!important;
+        height:1px!important;
+        opacity:0!important;
+        pointer-events:none!important;
+        margin:0!important;
+        padding:0!important;
+        overflow:hidden!important;
+      }
+
+      .im-picker-button {
+        width:100%;
+        min-height:48px;
+        border:1px solid #e4eaf3;
+        background:#f8faff;
+        border-radius:12px;
+        padding:12px 14px;
+        font:inherit;
+        font-size:15px;
+        color:#172b4d;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        text-align:left;
+        cursor:pointer;
+      }
+
+      .im-picker-button:focus-visible {
+        outline:2px solid #1677ff;
+        outline-offset:2px;
+      }
+
+      .im-picker-button:disabled {
+        opacity:.6;
+        cursor:default;
+      }
+
+      .im-picker-arrow {
+        font-size:23px;
+        color:#1677ff;
+      }
+
+      #imPickerRestore[hidden] {
+        display:none!important;
+      }
+
+      #imPickerRestore {
+        position:fixed;
+        inset:0;
+        z-index:10000;
+        background:rgba(0,0,0,.45);
+        display:flex;
+        align-items:flex-end;
+        justify-content:center;
+        padding:12px;
+      }
+
+      #imPickerRestore .im-picker-box {
+        width:100%;
+        max-width:650px;
+        max-height:85vh;
+        max-height:85dvh;
+        display:flex;
+        flex-direction:column;
+        background:#fff;
+        color:#172b4d;
+        border-radius:22px;
+        padding:18px;
+        box-shadow:0 12px 45px #0003;
+        font-family:Arial,sans-serif;
+      }
+
+      #imPickerRestore .im-picker-head {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-bottom:14px;
+      }
+
+      #imPickerRestore h3 {
+        margin:0;
+        font-size:18px;
+        color:#172b4d;
+      }
+
+      #imPickerRestore .im-picker-close {
+        width:36px;
+        height:36px;
+        flex-shrink:0;
+        border:0;
+        border-radius:50%;
+        background:#eef3fb;
+        color:#172b4d;
+        font-size:20px;
+        cursor:pointer;
+      }
+
+      #imPickerRestore input {
+        width:100%;
+        flex-shrink:0;
+        min-height:48px;
+        margin:0 0 12px;
+        padding:12px 14px;
+        border:1px solid #e4eaf3;
+        border-radius:12px;
+        background:#f8faff;
+        color:#172b4d;
+        font:inherit;
+        font-size:16px;
+        box-sizing:border-box;
+      }
+
+      #imPickerRestore .im-picker-list {
+        overflow-y:auto;
+        overscroll-behavior:contain;
+        min-height:0;
+        display:grid;
+        gap:7px;
+        padding:2px;
+      }
+
+      #imPickerRestore .im-picker-option {
+        width:100%;
+        min-height:48px;
+        margin:0;
+        padding:13px 14px;
+        border:1px solid #e4eaf3;
+        border-radius:12px;
+        background:#f8faff;
+        color:#172b4d;
+        font:inherit;
+        font-size:15px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        text-align:left;
+        cursor:pointer;
+      }
+
+      #imPickerRestore .im-picker-option.selected {
+        background:#eaf2ff;
+        border-color:#1677ff;
+        color:#075dcc;
+      }
+
+      #imPickerRestore .im-picker-check {
+        color:#1677ff;
+        font-size:20px;
+      }
+
+      #imPickerRestore .im-picker-empty {
+        text-align:center;
+        padding:20px;
+        color:#748399;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const modal = document.createElement("div");
+    modal.id = "imPickerRestore";
+    modal.hidden = true;
+
+    modal.innerHTML = `
+      <div class="im-picker-box"
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="imPickerTitle">
+
+        <div class="im-picker-head">
+          <h3 id="imPickerTitle"></h3>
+          <button class="im-picker-close"
+                  type="button"
+                  aria-label="Yopish">✕</button>
+        </div>
+
+        <input type="search"
+               placeholder="Qidirish..."
+               aria-label="Ro'yxatdan qidirish">
+
+        <div class="im-picker-list"></div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const title = modal.querySelector("h3");
+    const query = modal.querySelector("input");
+    const list = modal.querySelector(".im-picker-list");
+    const closeButton = modal.querySelector(".im-picker-close");
+
+    const bindings = [];
+    let active = null;
+    let oldOverflow = "";
+
+    const fieldInfo = {
+      District: ["🏛️", "Tuman yoki shahar"],
+      Mahalla: ["📍", "Mahallani tanlang"],
+      Type: ["🏠", "Uy turi"],
+      Rooms: ["🚪", "Xonalar soni"],
+      Repair: ["🛠️", "Ta'mir holati"]
+    };
+
+    function sync(binding) {
+      const option = binding.select.selectedOptions[0];
+
+      binding.label.textContent =
+        binding.icon + " " +
+        (option?.textContent || binding.title);
+
+      binding.button.disabled = binding.select.disabled;
+    }
+
+    function close() {
+      if (modal.hidden) return;
+
+      modal.hidden = true;
+      document.body.style.overflow = oldOverflow;
+
+      const previous = active;
+      active = null;
+      previous?.button.focus();
+    }
+
+    function render() {
+      if (!active) return;
+
+      list.replaceChildren();
+
+      const term = query.value.trim().toLocaleLowerCase("uz");
+
+      Array.from(active.select.options).forEach(option => {
+        if (option.disabled || option.hidden) return;
+
+        if (
+          !option.textContent
+            .toLocaleLowerCase("uz")
+            .includes(term)
+        ) return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "im-picker-option";
+
+        const selected =
+          active.select.value === option.value;
+
+        button.classList.toggle("selected", selected);
+
+        const label = document.createElement("span");
+        label.textContent = option.textContent;
+
+        const check = document.createElement("span");
+        check.className = "im-picker-check";
+        check.textContent = selected ? "✓" : "○";
+
+        button.append(label, check);
+
+        button.onclick = () => {
+          const select = active.select;
+          select.value = option.value;
+
+          select.dispatchEvent(
+            new Event("change", { bubbles: true })
+          );
+
+          bindings.forEach(sync);
+          close();
+        };
+
+        list.appendChild(button);
+      });
+
+      if (!list.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "im-picker-empty";
+        empty.textContent = "Ma’lumot topilmadi";
+        list.appendChild(empty);
+      }
+    }
+
+    function open(binding) {
+      if (binding.select.disabled) return;
+
+      active = binding;
+      title.textContent = binding.icon + " " + binding.title;
+      query.value = "";
+
+      render();
+
+      oldOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+
+      modal.hidden = false;
+      closeButton.focus();
+    }
+
+    ["search", "add"].forEach(prefix => {
+      Object.entries(fieldInfo).forEach(([suffix, info]) => {
+        const select =
+          document.getElementById(prefix + suffix);
+
+        if (!select || select.tagName !== "SELECT") return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "im-picker-button";
+        button.setAttribute("aria-haspopup", "dialog");
+        button.setAttribute("aria-label", info[1]);
+
+        const label = document.createElement("span");
+        const arrow = document.createElement("span");
+
+        arrow.className = "im-picker-arrow";
+        arrow.textContent = "›";
+
+        button.append(label, arrow);
+        select.insertAdjacentElement("afterend", button);
+
+        select.classList.add("im-original-select");
+        select.tabIndex = -1;
+
+        const binding = {
+          select,
+          button,
+          label,
+          icon: info[0],
+          title: info[1]
+        };
+
+        bindings.push(binding);
+        sync(binding);
+
+        button.onclick = () => open(binding);
+
+        select.addEventListener("change", () => {
+          bindings.forEach(sync);
+        });
+
+        select.addEventListener("invalid", event => {
+          event.preventDefault();
+          if (modal.hidden) open(binding);
+        });
+
+        new MutationObserver(() => sync(binding))
+          .observe(select, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["disabled", "selected"]
+          });
+      });
+    });
+
+    query.oninput = render;
+    closeButton.onclick = close;
+
+    modal.addEventListener("click", event => {
+      if (event.target === modal) close();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (modal.hidden) return;
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      }
+
+      if (event.key === "Tab") {
+        const items = Array.from(
+          modal.querySelectorAll("button,input")
+        );
+
+        const first = items[0];
+        const last = items[items.length - 1];
+
+        if (
+          event.shiftKey &&
+          document.activeElement === first
+        ) {
+          event.preventDefault();
+          last.focus();
+        } else if (
+          !event.shiftKey &&
+          document.activeElement === last
+        ) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    document.addEventListener("reset", () => {
+      setTimeout(() => bindings.forEach(sync), 0);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initPickers
+    );
+  } else {
+    initPickers();
+  }
+})();

@@ -620,3 +620,245 @@ button[type="submit"],
     max-width: 100%;
   }
 }
+
+/* IJARAMAKON - UMUMIY DIZAYN TUZATISHI */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fc;
+  color: #172b4d;
+  font-family: Arial, sans-serif;
+}
+
+/* ASOSIY MENYU */
+
+.home-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: calc(100% - 32px);
+  max-width: 520px;
+  margin: 24px auto;
+}
+
+.home-content h2,
+.home-content > p {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin: 6px 0;
+}
+
+.home-btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 8px;
+  border: 1px solid #dce5f1;
+  border-radius: 16px;
+  background: white;
+  color: #1769e0;
+  font-size: clamp(13px, 3.5vw, 17px);
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+/* SAHIFALAR */
+
+.container {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.search-card {
+  width: 100%;
+  margin: 0 auto;
+  padding: 18px;
+  background: white;
+  border-radius: 20px;
+}
+
+/* TANLASH TUGMALARI */
+
+.picker-btn,
+.fixed-region {
+  display: block;
+  width: 100%;
+  min-height: 54px;
+  padding: 15px;
+  margin-bottom: 12px;
+  border: 1px solid #dce5f1;
+  border-radius: 14px;
+  background: white;
+  color: #172b4d;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* ASOSIY AMAL TUGMALARI */
+
+.search-btn {
+  display: block;
+  width: 100%;
+  min-height: 54px;
+  margin: 22px 0 16px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #1769e0;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* E'LON KARTOCHKALARI */
+
+#results,
+#savedResults,
+#myHouses {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.result-card {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  margin: 0 0 18px;
+  background: #ffffff;
+  border: 1px solid #dce5f1;
+  border-radius: 18px;
+  box-shadow: 0 5px 16px rgba(0,0,0,.08);
+}
+
+.result-card h3 {
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5eaf2;
+  color: #1769e0;
+  font-size: 19px;
+}
+
+.result-card p {
+  margin: 12px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* TANLASH OYNASI */
+
+.modal[hidden] {
+  display: none !important;
+}
+
+.modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  background: rgba(0,0,0,.5) !important;
+}
+
+.modal-panel {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  max-height: 85dvh !important;
+  padding: 18px !important;
+  background: white !important;
+  border-radius: 20px !important;
+  overflow-y: auto !important;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.modal-header button {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: #edf3fc;
+  color: #172b4d;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#modalSearch {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+#modalList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-height: 55dvh;
+  overflow-y: auto;
+}
+
+#modalList button {
+  position: static !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100% !important;
+  min-height: 52px;
+  padding: 14px;
+  margin: 0 !important;
+  border: 1px solid #dce5f1;
+  border-radius: 12px;
+  background: white;
+  color: #172b4d;
+  font-size: 16px;
+  text-align: left;
+}
+
+#modalList button.selected {
+  border-color: #1769e0;
+  background: #eaf3ff;
+}
+
+/* TELEFON EKRANI */
+
+@media (max-width: 380px) {
+  .home-content {
+    gap: 8px;
+  }
+
+  .home-btn {
+    padding: 10px 5px;
+    font-size: 13px;
+  }
+
+  .search-card {
+    padding: 14px;
+  }
+}

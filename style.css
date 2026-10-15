@@ -437,3 +437,29 @@ button:active {
   font-size: 16px;
   box-sizing: border-box;
 }
+
+/* IJARAMAKON - Mahalla oynasini tuzatish */
+
+#mahallaModal,
+#districtModal,
+.modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+}
+
+#mahallaList,
+#modalList {
+  width: 100% !important;
+  max-height: 65vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+#mahallaList button,
+#modalList button {
+  position: relative !important;
+  width: 100% !important;
+  margin: 0 0 8px 0 !important;
+  box-sizing: border-box;
+}

@@ -1,0 +1,310 @@
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>IjaraMakon</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- BOSH SAHIFA -->
+<section id="homePage" class="page">
+
+  <header class="home-header">
+    <h1>🏠 IjaraMakon</h1>
+    <p>Xorazm bo'ylab ijara uylari</p>
+  </header>
+
+  <main class="home-content">
+
+    <h2>Xush kelibsiz!</h2>
+    <p>O'zingizga mos uy toping</p>
+
+    <button class="home-btn primary"
+            onclick="showPage('searchPage')">
+      🔎 Uy qidirish
+    </button>
+
+    <button class="home-btn"
+            onclick="showPage('addPage')">
+      ➕ E'lon berish
+    </button>
+
+    <button class="home-btn"
+            onclick="showPage('savedPage')">
+      ❤️ Saqlanganlar
+    </button>
+
+    <button class="home-btn"
+            onclick="showPage('profilePage')">
+      👤 Mening profilim
+    </button>
+
+  </main>
+</section>
+
+
+<!-- UY QIDIRISH SAHIFASI -->
+<section id="searchPage" class="page" hidden>
+
+  <div class="topbar">
+    <button onclick="showPage('homePage')">
+      ← Orqaga
+    </button>
+    <h2>🔎 Uy qidirish</h2>
+  </div>
+
+  <main class="container">
+    <div class="search-card">
+
+      <h2>🔎 Uy qidirish</h2>
+      <p>Kerakli ma'lumotlarni tanlang</p>
+
+      <label>Viloyat</label>
+      <div class="fixed-region">
+        📍 Xorazm viloyati
+      </div>
+
+      <label>Tuman yoki shahar</label>
+      <button id="districtPicker"
+              class="picker-btn"
+              onclick="openPicker('district')">
+        🏛️ Barcha hududlar
+      </button>
+      <input type="hidden" id="district">
+
+      <label>Mahalla</label>
+      <button id="mahallaPicker"
+              class="picker-btn"
+              onclick="openPicker('mahalla')">
+        📍 Barcha mahallalar
+      </button>
+      <input type="hidden" id="mahalla">
+
+      <label>Uy turi</label>
+      <button id="houseTypePicker"
+              class="picker-btn"
+              onclick="openPicker('houseType')">
+        🏠 Barcha uy turlari
+      </button>
+      <input type="hidden" id="houseType">
+
+      <label>Xonalar soni</label>
+      <button id="roomsPicker"
+              class="picker-btn"
+              onclick="openPicker('rooms')">
+        🚪 Farqi yo'q
+      </button>
+      <input type="hidden" id="rooms">
+
+      <label>Remont holati</label>
+      <button id="repairPicker"
+              class="picker-btn"
+              onclick="openPicker('repair')">
+        🛠️ Farqi yo'q
+      </button>
+      <input type="hidden" id="repair">
+
+      <label>Maksimal narx (so'm)</label>
+      <button id="pricePicker"
+              class="picker-btn"
+              onclick="openPricePicker()">
+        💰 Narx tanlanmagan
+      </button>
+      <input type="hidden" id="maxPrice">
+
+      <button class="search-btn"
+              onclick="searchHouses()">
+        🔎 Uylarni ko'rsatish
+      </button>
+
+      <div id="results"></div>
+
+    </div>
+  </main>
+</section>
+
+
+<!-- E'LON BERISH SAHIFASI: mavjud addPage section o'rniga qo'ying -->
+<section id="addPage" class="page" hidden>
+  <div class="topbar">
+    <button type="button" onclick="showPage('homePage')">← Orqaga</button>
+    <h2>➕ E'lon berish</h2>
+  </div>
+  <main class="container">
+    <div class="search-card">
+      <h2>🏠 Yangi e'lon</h2>
+      <p>Uyingiz haqidagi ma'lumotlarni kiriting</p>
+      <form id="addHouseForm">
+        <label for="addDistrictPicker">Tuman yoki shahar</label>
+        <button type="button" id="addDistrictPicker" class="picker-btn" onclick="openAddPicker('district')">🏛️ Tuman yoki shaharni tanlang</button>
+        <input type="hidden" id="addDistrict" value="">
+
+        <label for="addMahallaPicker">Mahalla</label>
+        <button type="button" id="addMahallaPicker" class="picker-btn" onclick="openAddPicker('mahalla')">📍 Mahallani tanlang</button>
+        <input type="hidden" id="addMahalla" value="">
+
+        <label for="addHouseTypePicker">Uy turi</label>
+        <button type="button" id="addHouseTypePicker" class="picker-btn" onclick="openAddPicker('houseType')">🏠 Uy turini tanlang</button>
+        <input type="hidden" id="addHouseType" value="">
+
+        
+<label for="addRoomsPicker">Xonalar soni</label>
+<button type="button"
+        id="addRoomsPicker"
+        class="picker-btn"
+        onclick="openAddPicker('rooms')">
+  🚪 Xonalar sonini tanlang
+</button>
+<input type="hidden" id="addRooms" value="">
+
+
+        <label for="addRepairPicker">Remont holati</label>
+        <button type="button" id="addRepairPicker" class="picker-btn" onclick="openAddPicker('repair')">🛠️ Remont holatini tanlang</button>
+        <input type="hidden" id="addRepair" value="">
+
+        <label for="addPrice">Oylik ijara narxi (so'm)</label>
+        <input id="addPrice" type="number" min="1" required placeholder="Masalan: 1500000">
+
+        <label for="addPhone">Telefon raqam</label>
+        <input id="addPhone" type="tel" required placeholder="+998 XX XXX XX XX">
+
+        <label for="addDescription">Qo'shimcha ma'lumot</label>
+        <textarea id="addDescription" rows="4" placeholder="Uy haqida ma'lumot"></textarea>
+
+        <label for="addPhotos">Uy rasmlari</label>
+        <input id="addPhotos" type="file" accept="image/*" multiple>
+
+        <button type="submit" class="search-btn">➕ E'lonni yuborish</button>
+      </form>
+      <p id="addMessage"></p>
+    </div>
+  </main>
+</section>
+
+
+<!-- SAQLANGANLAR SAHIFASI -->
+<section id="savedPage" class="page" hidden>
+
+  <div class="topbar">
+    <button onclick="showPage('homePage')">
+      ← Orqaga
+    </button>
+    <h2>❤️ Saqlanganlar</h2>
+  </div>
+
+  <main class="container">
+    <div class="search-card">
+      <h2>❤️ Saqlangan uylar</h2>
+      <div id="savedResults">
+        <p>Hozircha saqlangan uylar yo'q.</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+
+<!-- MENING PROFILIM -->
+<section id="profilePage" class="page" hidden>
+
+  <div class="topbar">
+    <button onclick="showPage('homePage')">
+      ← Orqaga
+    </button>
+    <h2>👤 Mening profilim</h2>
+  </div>
+
+  <main class="container">
+    <div class="search-card">
+
+      <h2>👤 Shaxsiy profil</h2>
+
+      <label for="profileName">Ismingiz</label>
+      <input id="profileName"
+             type="text"
+             placeholder="Ismingizni kiriting">
+
+      <label for="profilePhone">Telefon raqamingiz</label>
+      <input id="profilePhone"
+             type="tel"
+             placeholder="+998 XX XXX XX XX">
+
+      <button class="search-btn"
+              onclick="saveProfile()">
+        💾 Profilni saqlash
+      </button>
+
+      <p id="profileMessage"></p>
+
+      <h3>📋 Mening e'lonlarim</h3>
+      <div id="myHouses">
+        <p>Hozircha e'lonlaringiz yo'q.</p>
+      </div>
+
+    </div>
+  </main>
+</section>
+
+
+<!-- TANLASH OYNASI -->
+<div id="pickerModal" class="modal" hidden>
+
+  <div class="modal-panel">
+
+    <div class="modal-header">
+      <h3 id="modalTitle">Tanlang</h3>
+
+      <button onclick="closePicker()">
+        ✕
+      </button>
+    </div>
+
+    <input id="modalSearch"
+           type="search"
+           placeholder="Qidirish..."
+           oninput="filterOptions()">
+
+    <div id="modalList"></div>
+
+  </div>
+</div>
+
+
+<!-- NARX OYNASI -->
+<div id="priceModal" class="modal" hidden>
+
+  <div class="modal-panel price-panel">
+
+    <h3>💰 Maksimal narx</h3>
+
+    <input id="priceInput"
+           type="number"
+           min="0"
+           placeholder="Narxni kiriting">
+
+    <div class="price-actions">
+
+      <button onclick="closePricePicker()">
+        Bekor qilish
+      </button>
+
+      <button onclick="savePrice()">
+        Saqlash
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>

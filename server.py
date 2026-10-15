@@ -1,59 +1,63 @@
 
 import os
-import json
+import re
+import hmac
 import sqlite3
-import secrets
-import uuid
+import threading
+import time
+from datetime import datetime, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
+try:
+    import telebot
+    from telebot import types
+except ImportError:
+    telebot = None
+
+# IJARAMAKON — SERVER.PY
+
 app = Flask(__name__)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": os.environ.get(
+            "FRONTEND_ORIGIN",
+            "https://mshox3941414-dev.github.io"
+        ).split(",")
+    }
+})
 
-BASE = Path(__file__).resolve().parent
-DATA_DIR = Path(os.environ.get("DATA_DIR", str(BASE / "data")))
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+TOKEN = os.environ.get("BOT_TOKEN", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 
+DATA_DIR = Path(os.environ.get("DATA_DIR", "./data"))
 UPLOAD_DIR = DATA_DIR / "uploads"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
 DB_PATH = DATA_DIR / "ijaramakon.db"
 
-ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
-ALLOWED_ORIGINS = [
-    x.strip()
-    for x in os.environ.get(
-        "ALLOWED_ORIGINS",
-        "https://mshox3941414-dev.github.io"
-    ).split(",")
-    if x.strip()
-]
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-CORS(
-    app,
-    resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
-    allow_headers=["Content-Type", "X-Admin-Key"]
-)
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
-
-ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
-
+db_lock = threading.RLock()
 
 def connect():
-    db = sqlite3.connect(DB_PATH, timeout=20)
+    db = sqlite3.connect(str(DB_PATH), timeout=30)
     db.row_factory = sqlite3.Row
     return db
 
-
-def init_db():
-    with connect() as db:
+def initialize():
+    with db_lock, connect() as db:
         db.execute("""
-            CREATE TABLE IF NOT EXISTS listings (
+            CREATE TABLE IF NOT EXISTS houses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                client_id TEXT NOT NULL,
+                owner TEXT NOT NULL,
                 district TEXT NOT NULL,
                 mahalla TEXT NOT NULL,
                 type TEXT NOT NULL,
@@ -61,260 +65,357 @@ def init_db():
                 repair TEXT NOT NULL,
                 price INTEGER NOT NULL,
                 phone TEXT NOT NULL,
-                description TEXT,
-                photos TEXT NOT NULL DEFAULT '[]',
-                status TEXT NOT NULL DEFAULT 'pending',
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                address TEXT NOT NULL,
+                description TEXT DEFAULT '',
+                photo_url TEXT DEFAULT '',
+                status TEXT DEFAULT 'pending',
+                created_at TEXT NOT NULL
             )
         """)
+        db.commit()
 
+initialize()
 
-init_db()
+def rows(sql, params=()):
+    with db_lock, connect() as db:
+        return [dict(row) for row in db.execute(sql, params).fetchall()]
 
+def execute(sql, params=()):
+    with db_lock, connect() as db:
+        cur = db.execute(sql, params)
+        db.commit()
+        return cur.lastrowid
 
 def is_admin():
-    supplied = request.headers.get("X-Admin-Key", "")
+    supplied = request.headers.get("X-Admin-Password", "")
     return bool(
-        ADMIN_KEY
-        and supplied
-        and secrets.compare_digest(supplied, ADMIN_KEY)
+        ADMIN_PASSWORD and
+        hmac.compare_digest(supplied, ADMIN_PASSWORD)
     )
 
+def error(message, status=400):
+    return jsonify({"error": message}), status
 
-def require_admin():
-    if not is_admin():
-        return jsonify(error="Admin ruxsati yo'q"), 403
-    return None
+def clean(value, limit=200):
+    return str(value or "").strip()[:limit]
 
-
-def serialize(row, public=False):
-    item = dict(row)
-    item["photos"] = json.loads(item["photos"] or "[]")
-
-    if public:
-        item.pop("client_id", None)
-
-    return item
-
-
-def save_image(file):
-    if not file or not file.filename:
-        return None
-
-    filename = secure_filename(file.filename)
-    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
-
-    if ext not in ALLOWED_EXTENSIONS:
-        raise ValueError("Rasm formati noto'g'ri")
-
-    content = file.read()
-
-    if len(content) > 3 * 1024 * 1024:
-        raise ValueError("Rasm 3 MB dan katta")
-
-    signatures = {
-        "jpg": content.startswith(b"\xff\xd8\xff"),
-        "jpeg": content.startswith(b"\xff\xd8\xff"),
-        "png": content.startswith(b"\x89PNG\r\n\x1a\n"),
-        "webp": content[:4] == b"RIFF" and content[8:12] == b"WEBP"
-    }
-
-    if not signatures.get(ext, False):
-        raise ValueError("Rasm fayli noto'g'ri")
-
-    new_name = uuid.uuid4().hex + "." + ext
-    path = UPLOAD_DIR / new_name
-    path.write_bytes(content)
-
-    return "/uploads/" + new_name
-
+def public_listing(item, owner=None, admin=False):
+    result = dict(item)
+    if not admin and result["status"] != "approved":
+        if result["owner"] != owner:
+            return None
+    if not admin and result["owner"] != owner:
+        result.pop("owner", None)
+    return result
 
 @app.get("/")
 def home():
-    return jsonify(
-        name="IjaraMakon API",
-        status="working"
-    )
+    return jsonify({
+        "service": "IjaraMakon API",
+        "status": "working"
+    })
 
+@app.get("/health")
+def health():
+    return jsonify({"ok": True})
 
 @app.get("/api/listings")
-def get_listings():
-    with connect() as db:
-        rows = db.execute("""
-            SELECT * FROM listings
-            WHERE status = 'approved'
-            ORDER BY id DESC
-        """).fetchall()
-
-    return jsonify(
-        listings=[serialize(row, True) for row in rows]
+def list_houses():
+    owner = clean(request.args.get("owner"), 100)
+    all_items = rows(
+        "SELECT * FROM houses ORDER BY id DESC"
     )
-
-
-@app.post("/api/listings")
-def add_listing():
-    fields = [
-        "client_id", "district", "mahalla",
-        "type", "rooms", "repair",
-        "price", "phone"
+    visible = [
+        public_listing(item, owner)
+        for item in all_items
     ]
+    return jsonify({
+        "listings": [item for item in visible if item is not None]
+    })
 
-    values = {
-        key: request.form.get(key, "").strip()
-        for key in fields
-    }
+def save_photo(file):
+    if not file or not file.filename:
+        return ""
+    extension = Path(secure_filename(file.filename)).suffix.lower()
+    if extension not in (".jpg", ".jpeg", ".png", ".webp"):
+        raise ValueError("Faqat JPG, PNG yoki WEBP rasm yuklang")
 
-    if any(not value for value in values.values()):
-        return jsonify(error="Barcha maydonlarni to'ldiring"), 400
+    content = file.read(MAX_IMAGE_SIZE + 1)
+    if len(content) > MAX_IMAGE_SIZE:
+        raise ValueError("Rasm hajmi 5 MB dan oshmasin")
 
+    # Fayl haqiqiy rasm ekanini tekshirish
+    import io
+    from PIL import Image
     try:
-        price = int(values["price"])
-    except ValueError:
-        return jsonify(error="Narx noto'g'ri"), 400
+        img = Image.open(io.BytesIO(content))
+        img.verify()
+        img = Image.open(io.BytesIO(content))
+        img.load()
+        if img.format not in ("JPEG", "PNG", "WEBP"):
+            raise ValueError("Rasm formati noto'g'ri")
+    except Exception:
+        raise ValueError("Yaroqli rasm yuklang")
 
-    if price <= 0:
-        return jsonify(error="Narx musbat bo'lishi kerak"), 400
+    # Tasvirni qayta saqlash metama'lumotlarni ham olib tashlaydi
+    img.thumbnail((1600, 1600))
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGB")
+    if img.mode == "RGBA":
+        background = Image.new("RGB", img.size, "white")
+        background.paste(img, mask=img.getchannel("A"))
+        img = background
 
-    phone = values["phone"]
-
-    if not (
-        len(phone) == 13
-        and phone.startswith("+998")
-        and phone[1:].isdigit()
-    ):
-        return jsonify(error="Telefon raqami noto'g'ri"), 400
-
-    files = [
-        f for f in request.files.getlist("photos")
-        if f.filename
-    ]
-
-    if len(files) > 5:
-        return jsonify(error="5 tagacha rasm yuklang"), 400
-
-    photos = []
-
-    try:
-        for file in files:
-            url = save_image(file)
-            if url:
-                photos.append(url)
-    except ValueError as exc:
-        for url in photos:
-            (UPLOAD_DIR / url.split("/")[-1]).unlink(missing_ok=True)
-        return jsonify(error=str(exc)), 400
-
-    description = request.form.get("description", "").strip()[:1000]
-
-    with connect() as db:
-        cursor = db.execute("""
-            INSERT INTO listings (
-                client_id, district, mahalla,
-                type, rooms, repair, price,
-                phone, description, photos, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-        """, (
-            values["client_id"],
-            values["district"],
-            values["mahalla"],
-            values["type"],
-            values["rooms"],
-            values["repair"],
-            price,
-            phone,
-            description,
-            json.dumps(photos)
-        ))
-
-        listing_id = cursor.lastrowid
-
-    return jsonify(
-        success=True,
-        id=listing_id,
-        status="pending"
-    ), 201
-
+    filename = uuid4().hex + ".jpg"
+    img.save(UPLOAD_DIR / filename, "JPEG", quality=85)
+    return "/uploads/" + filename
 
 @app.get("/uploads/<path:filename>")
-def get_image(filename):
-    return send_from_directory(UPLOAD_DIR, filename)
+def uploaded_file(filename):
+    return send_from_directory(str(UPLOAD_DIR), filename)
 
-
-@app.get("/api/admin/listings")
-def admin_listings():
-    denied = require_admin()
-    if denied:
-        return denied
-
-    with connect() as db:
-        rows = db.execute("""
-            SELECT * FROM listings ORDER BY id DESC
-        """).fetchall()
-
-    return jsonify(
-        listings=[serialize(row) for row in rows]
-    )
-
-
-@app.post("/api/admin/bulk")
-def admin_bulk():
-    denied = require_admin()
-    if denied:
-        return denied
-
-    data = request.get_json(silent=True) or {}
-    ids = data.get("ids", [])
-    action = data.get("action", "")
-
-    if not isinstance(ids, list) or len(ids) > 500:
-        return jsonify(error="Tanlangan e'lonlar noto'g'ri"), 400
+@app.post("/api/listings")
+def create_house():
+    form = request.form
+    required = [
+        "owner", "district", "mahalla", "type",
+        "rooms", "repair", "price", "phone", "address"
+    ]
+    for field in required:
+        if not clean(form.get(field)):
+            return error(field + " maydoni to'ldirilmagan")
 
     try:
-        ids = list(set(int(x) for x in ids if int(x) > 0))
-    except (TypeError, ValueError):
-        return jsonify(error="ID noto'g'ri"), 400
+        price = int(form.get("price", "0"))
+    except ValueError:
+        return error("Narx noto'g'ri")
+    if price <= 0 or price > 100000000000:
+        return error("Narx noto'g'ri")
 
-    if not ids:
-        return jsonify(error="E'lon tanlanmagan"), 400
+    phone = clean(form.get("phone"), 30)
+    if not re.fullmatch(r"\+?[0-9 ()-]{9,20}", phone):
+        return error("Telefon raqami noto'g'ri")
 
+    photo_url = ""
+    try:
+        if "photo" in request.files:
+            photo_url = save_photo(request.files["photo"])
+    except ValueError as exc:
+        return error(str(exc))
+
+    values = (
+        clean(form.get("owner"), 100),
+        clean(form.get("district"), 100),
+        clean(form.get("mahalla"), 100),
+        clean(form.get("type"), 100),
+        clean(form.get("rooms"), 20),
+        clean(form.get("repair"), 100),
+        price,
+        phone,
+        clean(form.get("address"), 200),
+        clean(form.get("description"), 2000),
+        photo_url,
+        datetime.now(timezone.utc).isoformat()
+    )
+    house_id = execute("""
+        INSERT INTO houses
+        (owner, district, mahalla, type, rooms, repair,
+         price, phone, address, description, photo_url,
+         created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, values)
+
+    notify_admin(house_id)
+    return jsonify({
+        "ok": True,
+        "id": house_id,
+        "status": "pending"
+    }), 201
+
+@app.get("/api/admin/listings")
+def admin_list():
+    if not is_admin():
+        return error("Admin paroli noto'g'ri", 401)
+    return jsonify({
+        "listings": rows("SELECT * FROM houses ORDER BY id DESC")
+    })
+
+def change_status(house_id, action):
+    if action == "delete":
+        execute("DELETE FROM houses WHERE id=?", (house_id,))
+        return
     statuses = {
         "approve": "approved",
-        "reject": "rejected"
+        "reject": "rejected",
+        "rented": "rented"
     }
+    if action not in statuses:
+        raise ValueError("Noto'g'ri amal")
+    execute(
+        "UPDATE houses SET status=? WHERE id=?",
+        (statuses[action], house_id)
+    )
 
-    if action not in ("approve", "reject", "delete"):
-        return jsonify(error="Amal noto'g'ri"), 400
+@app.post("/api/admin/listings/<int:house_id>/<action>")
+def admin_change(house_id, action):
+    if not is_admin():
+        return error("Ruxsat yo'q", 401)
+    if action not in ("approve", "reject", "rented", "delete"):
+        return error("Noto'g'ri amal")
+    existing = rows("SELECT id FROM houses WHERE id=?", (house_id,))
+    if not existing:
+        return error("E'lon topilmadi", 404)
+    change_status(house_id, action)
+    return jsonify({"ok": True})
 
-    placeholders = ",".join("?" for _ in ids)
+# TELEGRAM BOT
+bot = telebot.TeleBot(TOKEN) if TOKEN and telebot else None
 
-    with connect() as db:
-        if action == "delete":
-            rows = db.execute(
-                f"SELECT photos FROM listings WHERE id IN ({placeholders})",
-                ids
-            ).fetchall()
+def house_text(h):
+    return (
+        f"🏠 E'lon #{h['id']}\n"
+        f"📍 {h['district']}, {h['mahalla']}\n"
+        f"🏡 {h['type']}\n"
+        f"🚪 {h['rooms']} xona\n"
+        f"🔧 {h['repair']}\n"
+        f"💰 {h['price']:,} so'm/oy\n"
+        f"📌 {h['address']}\n"
+        f"📞 {h['phone']}\n"
+        f"📝 {h['description']}\n"
+        f"Holati: {h['status']}"
+    )
 
-            db.execute(
-                f"DELETE FROM listings WHERE id IN ({placeholders})",
-                ids
-            )
+def admin_keyboard(house_id):
+    kb = types.InlineKeyboardMarkup()
+    kb.row(
+        types.InlineKeyboardButton(
+            "✅ Tasdiqlash", callback_data=f"approve_{house_id}"
+        ),
+        types.InlineKeyboardButton(
+            "❌ Rad etish", callback_data=f"reject_{house_id}"
+        )
+    )
+    kb.row(
+        types.InlineKeyboardButton(
+            "🏠 Ijaraga berildi", callback_data=f"rented_{house_id}"
+        )
+    )
+    return kb
+
+def notify_admin(house_id):
+    if not bot or not ADMIN_ID:
+        return
+    house = rows("SELECT * FROM houses WHERE id=?", (house_id,))
+    if not house:
+        return
+    h = house[0]
+    try:
+        if h["photo_url"]:
+            with open(DATA_DIR / h["photo_url"].lstrip("/").replace(
+                "uploads/", "uploads/", 1
+            ), "rb") as photo:
+                bot.send_photo(
+                    ADMIN_ID, photo,
+                    caption=house_text(h)[:1024],
+                    reply_markup=admin_keyboard(house_id)
+                )
         else:
-            db.execute(
-                f"UPDATE listings SET status = ? WHERE id IN ({placeholders})",
-                [statuses[action], *ids]
+            bot.send_message(
+                ADMIN_ID, house_text(h),
+                reply_markup=admin_keyboard(house_id)
             )
-            rows = []
+    except Exception as exc:
+        app.logger.warning("Telegram xabari: %s", exc)
 
-    if action == "delete":
-        for row in rows:
-            for url in json.loads(row["photos"] or "[]"):
-                (UPLOAD_DIR / url.split("/")[-1]).unlink(missing_ok=True)
+if bot:
+    @bot.message_handler(commands=["start"])
+    def start(message):
+        bot.reply_to(
+            message,
+            "🏠 IjaraMakon botiga xush kelibsiz!\n"
+            "E'lonlarni ko'rish: /houses\n"
+            "Admin panel: /admin"
+        )
 
-    return jsonify(success=True, count=len(ids))
+    @bot.message_handler(commands=["houses"])
+    def houses(message):
+        items = rows("""
+            SELECT * FROM houses
+            WHERE status='approved'
+            ORDER BY id DESC LIMIT 10
+        """)
+        if not items:
+            bot.reply_to(message, "Hozircha e'lonlar mavjud emas.")
+            return
+        for item in items:
+            bot.send_message(message.chat.id, house_text(item))
 
+    @bot.message_handler(commands=["admin"])
+    def admin(message):
+        if message.from_user.id != ADMIN_ID:
+            bot.reply_to(message, "⛔ Siz admin emassiz.")
+            return
+        items = rows("""
+            SELECT * FROM houses
+            WHERE status='pending'
+            ORDER BY id DESC LIMIT 30
+        """)
+        if not items:
+            bot.reply_to(message, "Kutilayotgan e'lonlar yo'q.")
+            return
+        for item in items:
+            bot.send_message(
+                message.chat.id,
+                house_text(item),
+                reply_markup=admin_keyboard(item["id"])
+            )
+
+    @bot.callback_query_handler(
+        func=lambda call: bool(re.fullmatch(
+            r"(approve|reject|rented)_\d+", call.data or ""
+        ))
+    )
+    def callback(call):
+        if call.from_user.id != ADMIN_ID:
+            bot.answer_callback_query(
+                call.id, "Siz admin emassiz", show_alert=True
+            )
+            return
+        action, id_string = call.data.split("_")
+        house_id = int(id_string)
+        item = rows("SELECT id FROM houses WHERE id=?", (house_id,))
+        if not item:
+            bot.answer_callback_query(call.id, "E'lon topilmadi")
+            return
+        change_status(house_id, action)
+        bot.answer_callback_query(call.id, "Amal bajarildi")
+        try:
+            bot.edit_message_reply_markup(
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=None
+            )
+        except Exception:
+            pass
+
+def run_bot():
+    if not bot:
+        return
+    while True:
+        try:
+            bot.remove_webhook()
+            bot.infinity_polling(
+                timeout=25,
+                long_polling_timeout=25,
+                skip_pending=True
+            )
+        except Exception as exc:
+            app.logger.error("Bot xatosi: %s", exc)
+            time.sleep(10)
+
+if bot and os.environ.get("RUN_BOT", "false").lower() == "true":
+    threading.Thread(target=run_bot, daemon=True).start()
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", "10000"))
-    )
+    port = int(os.environ.get("PORT", "10000"))
+    app.run(host="0.0.0.0", port=port)

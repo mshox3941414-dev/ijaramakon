@@ -1,8 +1,11 @@
 
 "use strict";
 
-// IJARAMAKON - APP.JS
-// 1-QISM: XORAZM HUDUDLARI VA MAHALLALAR
+/* IJARAMAKON — APP.JS */
+
+// Render server ishga tushgach manzilni kiriting.
+// Misol: https://ijaramakon-api.onrender.com
+const API_URL = "";
 
 const districts = [
   "Barcha hududlar",
@@ -21,1121 +24,734 @@ const districts = [
   "Yangibozor tumani"
 ];
 
-const mahallalar = {
-  "Bog'ot tumani": [
-    "Barcha mahallalar",
-    "Oltinqum", "Bo'ka", "Nurafshon",
-    "Yangi qadam", "Mehnatguli", "G'alaba",
-    "Ma'naviyat", "O'zgarish", "Nurli hayot",
-    "To'pchi", "Yuksalish", "Paxtaobod",
-    "Qipchoq", "Ashxabod", "Hunarmand",
-    "Ko'na birlashuv", "Nayman",
-    "Qalajiqqal'a", "Oq oltin", "Ustalar",
-    "Yosh o'smir", "Namuna", "Sohibkor",
-    "Madaniyat", "Tozabozor", "Oqtepa",
-    "Bog'iston", "Nurli maskan", "Gulzor",
-    "Hurriyat", "Gulshan", "Qorabog'",
-    "Sahovat", "Ortiq Otajonov",
-    "Dehqonobod", "Abu Rayxon Beruniy",
-    "Uzumzor", "Qulonqorabog'", "Navro'z",
-    "Bog'zor", "Navbahor", "Obod",
-    "O'zbekiston"
-  ],
-
-  "Gurlan tumani": [
-    "Barcha mahallalar",
-    "Dehqon", "Do'simbiy", "Bo'zqal'a",
-    "Qangli", "Chinobod", "Esabiy",
-    "Do'stlik", "Sovunchi", "Chakkalar",
-    "O'yilma", "Shang'i", "Eshimjiron",
-    "Birlashgan", "Besh uy", "Bog'ishamol",
-    "Oqqum", "Dehqonobod", "Nurafshon",
-    "Baynalmilal", "Saxtiyon", "Taxtako'pir",
-    "Navbir-yop", "Paxtachi", "Moyli",
-    "Marbugat", "Boldoqli", "Olg'a",
-    "Yormish", "Olchin", "Ziyokor",
-    "Vatanparvar", "Nurli yo'l", "Navbahor",
-    "Mevazor", "Do'stlik bog'i", "Gulshan",
-    "Ishonch", "Nurobod", "Jaloyir",
-    "Obod", "Nukus", "Qatariq",
-    "Marifat", "Bog'iston", "Yangi bog'",
-    "Yangi asr", "Shodlik", "Fidokor"
-  ],
-
-  "Qo'shko'pir tumani": [
-    "Barcha mahallalar",
-    "Ayronko'l", "Adolat", "Ittifoq",
-    "O'rta qishloq", "Qadriyat", "Vaximchi",
-    "Zarbdor", "Tagalak", "Paxtakor",
-    "Dovud", "Arablar", "Bog'zor",
-    "Xosiyon", "Kenagas", "Baratlar",
-    "Ko'ktom", "Sherobod", "Shixmashhad",
-    "Polvon", "Baxoriston", "Qorovul",
-    "Oshok ka'la", "Xayrobod", "Amirqum",
-    "Oltin voha", "Yoshlik", "Qoramon",
-    "Ko'nazey", "Gulzor", "Durdona",
-    "Burloq", "Shixobod", "Uyg'ur",
-    "Mehnatobod", "Yovg'ir", "Xonobod",
-    "Bekobod", "O'rtayop", "Ilgaldi",
-    "Iqbol", "Taraqqiyot", "Madaniyat",
-    "Chamanzor", "Yangilik", "Nezaxas",
-    "Mesit", "Do'stlik"
-  ],
-
-  "Tuproqqal'a tumani": [
-    "Barcha mahallalar",
-    "Saidlar", "Hazorasp", "Navbahor",
-    "Shexlar", "Sarimoy", "Pastom",
-    "Yoshlik", "Yo'ldosh Ohunboboev",
-    "Muhabbat", "Sayapir", "Sharlauk",
-    "Nukus maskani", "Tuproqqal'a maskani",
-    "Saxovat", "Obod", "Yakka chiqir",
-    "Nurobod", "Yangi zamin"
-  ],
-
-  "Urganch tumani": [
-    "Barcha mahallalar",
-    "G'alaba", "Qo'ng'irot", "Xilol",
-    "Munis Xorazmiy", "Adolat", "Qipchoq",
-    "Mergan ovul", "Ko'xna ovul", "Jayxun",
-    "Shermatlar", "Qiyot", "Rovot",
-    "Kattabog'", "Oq yop", "Gulobod",
-    "Killavut", "Qumravot", "Anjirchilar",
-    "Hamid Olimjon", "Komiljon Otaniyazov",
-    "Yuqoriovul", "Yuqorijirmiz",
-    "Chakka ko'li", "Xojiboylar",
-    "Oq oltin", "Miroblar", "Bog'dorchi",
-    "Zargarlar", "Obod", "Beruniy",
-    "Oq maktab", "Uyshun", "Ok ariklar",
-    "Mevazor", "Arboblar", "Orzu",
-    "Sholikorlar", "Qoramon", "Boqaylar",
-    "Oyok bog'", "Arablar", "Bo'ston",
-    "Shodlik", "Tandirchi", "Beshayvon",
-    "Qaychili", "Shoxidonlar",
-    "Bobodehqon", "Tadqiqotchilar",
-    "Uchko'prik", "Turkmanlar", "Yoshlik",
-    "Cho'lobod", "Yangiobod",
-    "Yangi O'rtabog'", "O'rtado'rman"
-  ],
-
-  "Urganch shahri": [
-    "Barcha mahallalar",
-    "Feruz", "Al-Xorazmiy", "Gulshan",
-    "Yangi obod", "Mash'al", "Mustaqillik",
-    "Yangi hayot", "Gulzor", "Bobur",
-    "Avesto", "Shodlik", "Ziyokorlar",
-    "Yuqori bog'", "Navruz", "Ma'rifat",
-    "Obi hayot", "Kamolot", "Xamjihatlik",
-    "Binokor", "Ashhabad", "Bo'ston",
-    "Istiqlol", "Toza bog'", "Navbahor",
-    "Olma bog'", "Jingovuz", "Nurli xayot",
-    "Yangi O'zbekiston", "Saxovat",
-    "Jambul", "Ko'hna qal'a",
-    "J.Manguberdi", "Islomobod",
-    "Olimpiya", "Baynalminalchi",
-    "Umid", "Gulchilar", "Besh mergan",
-    "Do'stlik", "Temir yo'lchi"
-  ],
-
-  "Hazorasp tumani": [
-    "Barcha mahallalar",
-    "Muxomon", "Pichoqchi", "Kamolot",
-    "Karvak", "Bo'ston", "Otaliq",
-    "Amudaryo", "Paxlavon Maxmud",
-    "Ovshar", "Yangibozor", "Shovot",
-    "Oq maydon", "Qovunchi",
-    "Temirchi maskani", "Kirtepa",
-    "Sulaymon qal'asi", "G'.G'ulom",
-    "Yangi xayot", "Istiqlol",
-    "Aloqali ko'l", "Bogi eram",
-    "Sanoat", "Gulzor", "Mustaqillik",
-    "Zehnli", "Navro'z", "Yangiobod",
-    "Bog'dor", "Ming otliqlar",
-    "Juvarxos", "Ziyolilar",
-    "Jaloladdin Manguberdi",
-    "Yuqori Shovot", "Beshta",
-    "Taraqqiyot", "Buyuk Simo",
-    "Shoduxurram", "Ishchilar",
-    "Al-Xorazmiy", "Munis Xorazmiy",
-    "Buyuk ajdodlar", "Obod zamin",
-    "Oybek nomli", "Barkamol avlod",
-    "Bog'irog'lar", "Shukrona"
-  ],
-
-  "Xiva tumani": [
-    "Barcha mahallalar",
-    "Chanashik", "Qora qum", "Juryon",
-    "Chinobod", "Pishkanik", "Oq yop",
-    "Gulshan", "Istiqlol",
-    "Kushchi kattabog'", "Gandimyon",
-    "Shomoxulum", "Parchanxos",
-    "Pana Maxsim", "Al Xorazmiy",
-    "Go'ja guzari", "Polosulton",
-    "Bo'ston", "Soyot", "Varangzon",
-    "Pirnaxos", "Avaz Dunak",
-    "Kattibosh", "Dashyoq", "Arvik",
-    "Shayx Najmiddin Kubro",
-    "Sho'r ko'l", "Qumyop", "Sapcha",
-    "G'ovuk", "Parisha",
-    "Atajon to'ra", "Serchalli"
-  ],
-
-  "Xiva shahri": [
-    "Barcha mahallalar",
-    "Sangar", "Lolazor", "Kalta minor",
-    "Gulirayxon", "Angarik", "Gulshan-2",
-    "Yangi hayot", "Qibla tozabog'",
-    "Yangi Binokor", "Tozabog'",
-    "Shixlar", "Guliston", "Qiyot",
-    "Do'stlik", "Gazchi", "Qumyaska",
-    "Yangi turmush", "Gilamchi",
-    "Kaptarxona", "Ichon qa'la"
-  ],
-
-  "Xonqa tumani": [
-    "Barcha mahallalar",
-    "Do'rmon", "Navro'z", "Katta kuch",
-    "Istiqlol", "Znaxos", "Shirin",
-    "Yosh kuch", "Qoramozi", "Paxtakor",
-    "Madaniyat", "Ilg'or", "Obod",
-    "Guliston", "Oydin hayot",
-    "Turkiston", "Durgadik", "Toma",
-    "Nurobod", "Olchin", "Vatanparvar",
-    "Muqaddas", "Paxtagul",
-    "Madaniy er", "Nurafshon",
-    "Yangilanish", "Yangi turmush",
-    "Barkamollik", "Porlok", "Ehtirom",
-    "Jannatmakon", "Do'stlik",
-    "Mangulik", "Fidoyilar", "Ahillik",
-    "Tayanch", "Moshto'g'ay",
-    "Pahlavonlar", "Gulg'uncha",
-    "Mustaqillik", "G'ayrat", "Bunyodkor"
-  ],
-
-  "Shovot tumani": [
-    "Barcha mahallalar",
-    "Katkal'a", "Komiljon ota", "Royat",
-    "Monoq", "Chig'atoy", "Ipakchi",
-    "Arbob", "Qangli", "Yangiyo'l",
-    "Buyrachi", "Bo'ston", "Uzunko'l",
-    "Eshon-qal'a", "Tuproqqal'a",
-    "Archazor", "To'qmang'it",
-    "Beshmargan", "Mevazor", "Arbek",
-    "Madaniyat", "Idaliqal'a",
-    "Qo'shko'pir", "Komiljon Otaniyozov",
-    "Ogaxiy", "Oq-ko'l (Mahtumquli)",
-    "Xitoy", "Navro'z", "Bog'bon",
-    "Qiyot", "Ijtimoiyat", "Gulshan",
-    "Paxtakor", "Maxtumquli",
-    "Beshchiqir", "Guliston", "Zamondosh",
-    "Yangi burloq", "Taraqqiyot",
-    "Yangi O'zbekiston", "Shovot",
-    "Qunduz", "Po'lat", "Oltinqal'a",
-    "Istiqbol", "Qum-yop", "Bunyodkor",
-    "Asavey", "Oq-oltin", "Do'stlik",
-    "Yangiobod", "Turkiston",
-    "Qirg'oq bo'yi"
-  ],
-
-  "Yangiariq tumani": [
-    "Barcha mahallalar",
-    "Savgan", "Achchikkuyi", "Chakir",
-    "Jaloil", "Sherobod", "Qo'riqtom",
-    "Chiqirchi", "Gulbog'", "Shixbog'i",
-    "Yangier", "Turkiston", "Arboblar",
-    "Ulug'bek", "Boyot", "Angiariq",
-    "Vakillar", "Ostona", "Gulshanda",
-    "Qo'ng'irot", "Shirsholi",
-    "Egrisolma", "Karmish", "Soburzon",
-    "Kattabog'", "Tagan", "Po'rsang",
-    "Do'stlik", "Uyg'ur", "Xo'jalar",
-    "Yangiariq", "Ogoxiy", "Tuzloq",
-    "Sardorlar", "Urganch", "Yangiobod",
-    "Oqmachit", "Qo'shloq"
-  ],
-
-  "Yangibozor tumani": [
-    "Barcha mahallalar",
-    "Xamid Olimjon", "Xalqobod",
-    "Jayxun", "Istiqlol", "Navbaxor",
-    "Oltinko'l", "Bog'olon", "Mang'itlar",
-    "Ocha-qala", "Shoirlar",
-    "Yuqori boshqir", "Shirinlar",
-    "Iftixor", "Cho'bolonchi",
-    "Ming Bog'olon", "Tozado'rman",
-    "Bo'ston", "Yangi yop", "Xayvat",
-    "Pahlavon Mahmud", "Qora-tepa",
-    "Katli", "Qadriyat", "Guliston",
-    "Navro'z", "Do'stlik", "Qiyot",
-    "Barxayot", "Yangi obod"
-  ]
-};
-
-// 1-QISM TUGADI
-// 2-QISM SHU YERDAN DAVOM ETADI
-
-/* =====================================
-   IJARAMAKON - 2-QISM
-   TANLASH OYNALARI VA NARX
-===================================== */
-
-// TANLASH VARIANTLARI
-const options = {
-  district: districts,
-
-  houseType: [
-    "Barcha uy turlari",
-    "Hovli uy",
-    "Kvartira"
-  ],
-
-  rooms: [
-    "Farqi yo'q",
-    "1 xona",
-    "2 xona",
-    "3 xona",
-    "4 xona",
-    "5 xona",
-    "6 va undan ko'p"
-  ],
-
-  repair: [
-    "Farqi yo'q",
-    "Yangi remont",
-    "Yaxshi holatda",
-    "Oddiy holatda"
-  ]
-};
-
-// OYNA SARLAVHALARI
-const titles = {
-  district: "🏛️ Xorazm hududlari",
-  mahalla: "📍 Mahallani tanlang",
-  houseType: "🏠 Uy turi",
-  rooms: "🚪 Xonalar soni",
-  repair: "🛠️ Remont holati"
-};
-
-// TUGMA BELGILARI
-const icons = {
-  district: "🏛️",
-  mahalla: "📍",
-  houseType: "🏠",
-  rooms: "🚪",
-  repair: "🛠️"
-};
-
-let activePicker = null;
-
-// HTML ELEMENTINI OLISH
-function getEl(id) {
-  return document.getElementById(id);
-}
-
-// VARIANTLAR RO'YXATI
-function getOptions(type) {
-  if (type === "mahalla") {
-    const district = getEl("district").value;
-
-    return mahallalar[district] || [
-      "Barcha mahallalar"
-    ];
-  }
-
-  return options[type] || [];
-}
-
-// TANLASH OYNASINI OCHISH
-function openPicker(type) {
-  if (
-    type === "mahalla" &&
-    !getEl("district").value
-  ) {
-    alert("Avval tuman yoki shaharni tanlang!");
-    return;
-  }
-
-  activePicker = type;
-
-  getEl("modalTitle").textContent = titles[type];
-  getEl("modalSearch").value = "";
-
-  renderOptions(getOptions(type));
-
-  getEl("pickerModal").hidden = false;
-}
-
-// TANLASH OYNASINI YOPISH
-function closePicker() {
-  getEl("pickerModal").hidden = true;
-  activePicker = null;
-}
-
-// ASOSIY RO'YXATNI CHIQARISH
-function renderOptions(items) {
-  const list = getEl("modalList");
-  list.innerHTML = "";
-
-  if (!items.length) {
-    const message = document.createElement("p");
-    message.className = "empty-message";
-    message.textContent = "Ma'lumot topilmadi";
-    list.appendChild(message);
-    return;
-  }
-
-  items.forEach(name => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "option-item";
-
-    const value = isDefault(name) ? "" : name;
-
-    const selected =
-      getEl(activePicker).value === value;
-
-    if (selected) {
-      item.classList.add("selected");
-    }
-
-    const title = document.createElement("span");
-    title.textContent = name;
-
-    const check = document.createElement("span");
-    check.className = "check";
-    check.textContent = selected ? "✓" : "○";
-
-    item.append(title, check);
-
-    item.onclick = () => {
-      selectOption(activePicker, name);
-    };
-
-    list.appendChild(item);
-  });
-}
-
-// BARCHA / FARQI YO'Q VARIANTLARI
-function isDefault(name) {
-  return [
-    "Barcha hududlar",
-    "Barcha mahallalar",
-    "Barcha uy turlari",
-    "Farqi yo'q"
-  ].includes(name);
-}
-
-// TANLANGAN VARIANTNI SAQLASH
-function selectOption(type, name) {
-  const value = isDefault(name) ? "" : name;
-
-  getEl(type).value = value;
-
-  getEl(type + "Picker").textContent =
-    icons[type] + " " + name;
-
-  // TUMAN O'ZGARSA MAHALLANI TOZALASH
-  if (type === "district") {
-    getEl("mahalla").value = "";
-
-    getEl("mahallaPicker").textContent =
-      "📍 Barcha mahallalar";
-  }
-
-  closePicker();
-}
-
-// RO'YXAT ICHIDA QIDIRISH
-function filterOptions() {
-  if (!activePicker) return;
-
-  const search = getEl("modalSearch")
-    .value.toLocaleLowerCase("uz");
-
-  const filtered = getOptions(activePicker)
-    .filter(name =>
-      name.toLocaleLowerCase("uz").includes(search)
-    );
-
-  renderOptions(filtered);
-}
-
-/* =====================================
-   NARX TANLASH
-===================================== */
-
-// NARX OYNASINI OCHISH
-function openPricePicker() {
-  getEl("priceInput").value =
-    getEl("maxPrice").value;
-
-  getEl("priceModal").hidden = false;
-}
-
-// NARX OYNASINI YOPISH
-function closePricePicker() {
-  getEl("priceModal").hidden = true;
-}
-
-// NARXNI SAQLASH
-function savePrice() {
-  const price = getEl("priceInput").value.trim();
-  const number = Number(price);
-
-  if (
-    price !== "" &&
-    (!Number.isFinite(number) || number < 0)
-  ) {
-    alert("To'g'ri narx kiriting!");
-    return;
-  }
-
-  getEl("maxPrice").value =
-    number > 0 ? String(number) : "";
-
-  getEl("pricePicker").textContent =
-    number > 0
-      ? "💰 " +
-        number.toLocaleString("en-US") +
-        " so'mgacha"
-      : "💰 Narx tanlanmagan";
-
-  closePricePicker();
-}
-
-// 2-QISM TUGADI
-// 3-QISM SHU YERDAN DAVOM ETADI
-
-/* =====================================
-   IJARAMAKON - 3-QISM
-   UYLARNI QIDIRISH VA NATIJALAR
-===================================== */
-
-// SINOV UCHUN UYLAR
-// Bu haqiqiy e'lonlar bazasi emas.
-
-const houses = [
-  {
-    district: "Tuproqqal'a tumani",
-    mahalla: "Muhabbat",
-    houseType: "Hovli uy",
-    rooms: 3,
-    repair: "Yaxshi holatda",
-    price: 1500000
-  },
-  {
-    district: "Urganch shahri",
-    mahalla: "",
-    houseType: "Kvartira",
-    rooms: 2,
-    repair: "Yangi remont",
-    price: 2500000
-  },
-  {
-    district: "Xiva shahri",
-    mahalla: "",
-    houseType: "Hovli uy",
-    rooms: 4,
-    repair: "Oddiy holatda",
-    price: 1200000
-  }
+// Mahallalar to'liq ro'yxati keyin qo'shiladi.
+// Hozir tumanlar ishlaydi.
+const mahallalar = {};
+
+const houseTypes = [
+  "Yer uchastkali uy",
+  "Ko'p qavatli uydagi kvartira"
 ];
 
-/* =====================================
-   UYLARNI QIDIRISH
-===================================== */
+const repairs = [
+  "Ta'mirsiz",
+  "Oddiy ta'mir",
+  "Yaxshi ta'mir",
+  "Yevro remont"
+];
 
-function searchHouses() {
-  const district = getEl("district").value;
-  const mahalla = getEl("mahalla").value;
-  const houseType = getEl("houseType").value;
-  const rooms = getEl("rooms").value;
-  const repair = getEl("repair").value;
-  const maxPrice = Number(getEl("maxPrice").value);
+const rooms = [
+  "1", "2", "3", "4", "5", "6", "7+"
+];
 
-  const found = houses.filter(house => {
+const $ = id => document.getElementById(id);
 
-    // TUMAN BO'YICHA
-    if (
-      district &&
-      house.district !== district
-    ) {
-      return false;
-    }
+let listings = [];
+let adminListings = [];
+let selectedIds = new Set();
+let adminKey = "";
+let toastTimer;
 
-    // MAHALLA BO'YICHA
-    if (
-      mahalla &&
-      house.mahalla !== mahalla
-    ) {
-      return false;
-    }
+const savedIds = new Set(
+  JSON.parse(localStorage.getItem("ijaraSaved") || "[]")
+);
 
-    // UY TURI BO'YICHA
-    if (
-      houseType &&
-      house.houseType !== houseType
-    ) {
-      return false;
-    }
+const clientId = getClientId();
 
-    // REMONT HOLATI BO'YICHA
-    if (
-      repair &&
-      house.repair !== repair
-    ) {
-      return false;
-    }
+function getClientId() {
+  let id = localStorage.getItem("ijaraClientId");
 
-    // XONALAR SONI BO'YICHA
-    if (rooms) {
-
-      if (rooms === "6 va undan ko'p") {
-        if (house.rooms < 6) {
-          return false;
-        }
-      } else {
-        const roomCount = parseInt(rooms, 10);
-
-        if (house.rooms !== roomCount) {
-          return false;
-        }
-      }
-    }
-
-    // MAKSIMAL NARX BO'YICHA
-    if (
-      maxPrice > 0 &&
-      house.price > maxPrice
-    ) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // NATIJALAR OYNASI
-  const results = getEl("results");
-  results.innerHTML = "";
-
-  const heading = document.createElement("h3");
-
-  heading.textContent =
-    "🏠 Topilgan uylar: " + found.length;
-
-  results.appendChild(heading);
-
-  // UY TOPILMAGANDA
-  if (!found.length) {
-    const empty = document.createElement("p");
-
-    empty.className = "empty-message";
-
-    empty.textContent =
-      "Tanlangan shartlarga mos uy topilmadi.";
-
-    results.appendChild(empty);
-    return;
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("ijaraClientId", id);
   }
 
-  // TOPILGAN UYLARNI CHIQARISH
-  found.forEach(house => {
-    const card = document.createElement("div");
-    card.className = "result-card";
+  return id;
+}
 
-    const title = document.createElement("h3");
-    title.textContent = "🏠 " + house.houseType;
+function saveFavorites() {
+  localStorage.setItem(
+    "ijaraSaved",
+    JSON.stringify([...savedIds])
+  );
+}
 
-    card.appendChild(title);
+function showToast(message) {
+  const el = $("toast");
+  if (!el) return;
 
-    const details = [
-      "📍 " + house.district +
-        (house.mahalla
-          ? ", " + house.mahalla
-          : ""),
+  el.textContent = message;
+  clearTimeout(toastTimer);
 
-      "🚪 " + house.rooms + " xona",
+  toastTimer = setTimeout(() => {
+    el.textContent = "";
+  }, 3500);
+}
 
-      "🛠️ " + house.repair,
+function apiPath(path) {
+  if (!API_URL) {
+    throw new Error("Server hali ulanmagan");
+  }
 
-      "💰 " +
-        house.price.toLocaleString("en-US") +
-        " so'm / oy"
-    ];
+  return API_URL.replace(/\/$/, "") + path;
+}
 
-    details.forEach(line => {
-      const p = document.createElement("p");
-      p.textContent = line;
-      card.appendChild(p);
-    });
+async function api(path, options = {}, isAdmin = false) {
+  const headers = {
+    ...(options.headers || {})
+  };
 
-    results.appendChild(card);
+  if (isAdmin && adminKey) {
+    headers["X-Admin-Key"] = adminKey;
+  }
+
+  const response = await fetch(apiPath(path), {
+    ...options,
+    headers
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || "Server xatosi");
+  }
+
+  return data;
+}
+
+function option(select, value, text) {
+  const el = document.createElement("option");
+  el.value = value;
+  el.textContent = text;
+  select.appendChild(el);
+}
+
+function fillSelect(id, values, firstText = "") {
+  const el = $(id);
+  if (!el) return;
+
+  el.innerHTML = "";
+
+  if (firstText) option(el, "", firstText);
+
+  values.forEach(value => option(el, value, value));
+}
+
+function updateMahallas(prefix) {
+  const district = $(prefix + "District").value;
+  const select = $(prefix + "Mahalla");
+
+  select.innerHTML = "";
+  option(select, "", "Barcha mahallalar");
+
+  (mahallalar[district] || []).forEach(name => {
+    if (name !== "Barcha mahallalar") {
+      option(select, name, name);
+    }
   });
 }
 
-/* =====================================
-   OYNALARNI TASHQARIDAN BOSIB YOPISH
-===================================== */
+function initializeSelects() {
+  ["search", "add"].forEach(prefix => {
+    fillSelect(
+      prefix + "District",
+      districts.slice(1),
+      prefix === "search"
+        ? "Barcha hududlar"
+        : "Tumanni tanlang"
+    );
 
-getEl("pickerModal").addEventListener(
-  "click",
-  function(event) {
-    if (event.target === this) {
-      closePicker();
-    }
-  }
-);
+    fillSelect(
+      prefix + "Type",
+      houseTypes,
+      prefix === "search"
+        ? "Barcha uy turlari"
+        : "Uy turini tanlang"
+    );
 
-getEl("priceModal").addEventListener(
-  "click",
-  function(event) {
-    if (event.target === this) {
-      closePricePicker();
-    }
-  }
-);
+    fillSelect(
+      prefix + "Rooms",
+      rooms,
+      prefix === "search"
+        ? "Barcha xonalar"
+        : "Xonalar sonini tanlang"
+    );
 
-// IJARAMAKON APP.JS TUGADI
+    fillSelect(
+      prefix + "Repair",
+      repairs,
+      prefix === "search"
+        ? "Barcha remontlar"
+        : "Remontni tanlang"
+    );
 
-/* =====================================
-   IJARAMAKON - BOSH MENYU
-   E'LONLAR VA PROFIL
-===================================== */
+    $(prefix + "District").addEventListener(
+      "change",
+      () => updateMahallas(prefix)
+    );
 
-// SAHIFALAR ORASIDA O'TISH
-function showPage(pageId) {
-  document.querySelectorAll(".page").forEach(page => {
-    page.hidden = page.id !== pageId;
+    updateMahallas(prefix);
+  });
+}
+
+function showPage(page) {
+  document.querySelectorAll(".page").forEach(el => {
+    el.hidden = el.id !== page;
+  });
+
+  document.querySelectorAll("[data-page]").forEach(btn => {
+    btn.classList.toggle(
+      "active",
+      btn.dataset.page === page
+    );
   });
 
   window.scrollTo(0, 0);
 
-  if (pageId === "addPage") {
-    initAddForm();
-  }
-
-  if (pageId === "savedPage") {
-    renderSavedHouses();
-  }
-
-  if (pageId === "profilePage") {
-    loadProfile();
-    renderMyHouses();
-  }
+  if (page === "saved") renderSaved();
+  if (page === "profile") renderProfile();
+  if (page === "admin" && adminKey) loadAdmin();
+  if (page === "search") renderListings("results", listings);
 }
 
-// BRAUZERDA MA'LUMOTLARNI SAQLASH
-function readLocal(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch (error) {
-    return fallback;
-  }
+function formatPrice(price) {
+  return new Intl.NumberFormat("uz-UZ").format(
+    Number(price) || 0
+  ) + " so'm";
 }
 
-function writeLocal(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (error) {
-    alert("Ma'lumotni saqlashda xatolik yuz berdi.");
-    return false;
-  }
+function safeText(value) {
+  return String(value ?? "");
 }
 
-// E'LON BERISH FORMASI
-function initAddForm() {
-  const districtSelect = getEl("addDistrict");
-  const mahallaSelect = getEl("addMahalla");
+function createText(tag, text, className = "") {
+  const el = document.createElement(tag);
+  el.textContent = safeText(text);
+  if (className) el.className = className;
+  return el;
+}
 
-  if (!districtSelect || !mahallaSelect) return;
+function makeButton(text, callback, className = "") {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = text;
+  button.className = className;
+  button.addEventListener("click", callback);
+  return button;
+}
 
-  districtSelect.innerHTML =
-    '<option value="">Tanlang</option>';
+function photoUrl(photo) {
+  if (!photo || typeof photo !== "string") return "";
 
-  districts
-    .filter(name => name !== "Barcha hududlar")
-    .forEach(name => {
-      districtSelect.add(new Option(name, name));
+  if (photo.startsWith("https://")) return photo;
+
+  if (photo.startsWith("/uploads/") && API_URL) {
+    return API_URL.replace(/\/$/, "") + photo;
+  }
+
+  return "";
+}
+
+function showPhoto(url) {
+  if (!url) return;
+
+  $("bigPhoto").src = url;
+  $("photoDialog").showModal();
+}
+
+function normalizeListing(item) {
+  return {
+    id: item.id,
+    district: item.district || "",
+    mahalla: item.mahalla || "",
+    type: item.type || "",
+    rooms: item.rooms || "",
+    repair: item.repair || "",
+    price: item.price || 0,
+    phone: item.phone || "",
+    description: item.description || "",
+    status: item.status || "pending",
+    photos: Array.isArray(item.photos)
+      ? item.photos
+      : []
+  };
+}
+
+function createListingCard(raw, admin = false) {
+  const item = normalizeListing(raw);
+
+  const card = document.createElement("article");
+  card.className = "listing-card";
+
+  const imageBox = document.createElement("div");
+  imageBox.className = "listing-image";
+
+  const firstPhoto = photoUrl(item.photos[0]);
+
+  if (firstPhoto) {
+    const img = document.createElement("img");
+    img.src = firstPhoto;
+    img.alt = "Ijara uy rasmi";
+    img.loading = "lazy";
+    img.addEventListener("click", () => showPhoto(firstPhoto));
+    imageBox.appendChild(img);
+  } else {
+    imageBox.appendChild(
+      createText("div", "🏠 Rasm mavjud emas", "no-photo")
+    );
+  }
+
+  if (!admin) {
+    const heart = makeButton(
+      savedIds.has(item.id) ? "♥" : "♡",
+      () => {
+        if (savedIds.has(item.id)) {
+          savedIds.delete(item.id);
+        } else {
+          savedIds.add(item.id);
+        }
+
+        saveFavorites();
+        renderAll();
+        showToast("Saqlangan e'lonlar yangilandi");
+      },
+      "save-btn" + (savedIds.has(item.id) ? " saved" : "")
+    );
+
+    heart.setAttribute("aria-label", "E'lonni saqlash");
+    imageBox.appendChild(heart);
+  }
+
+  if (admin) {
+    const selectBox = document.createElement("label");
+    selectBox.className = "admin-select";
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.checked = selectedIds.has(item.id);
+
+    check.addEventListener("change", () => {
+      if (check.checked) selectedIds.add(item.id);
+      else selectedIds.delete(item.id);
+      updateSelectedCount();
     });
 
-  districtSelect.onchange = () => {
-    mahallaSelect.innerHTML =
-      '<option value="">Tanlang</option>';
+    selectBox.appendChild(check);
+    selectBox.append(" Tanlash");
+    imageBox.appendChild(selectBox);
+  }
 
-    const names = mahallalar[districtSelect.value] || [];
+  card.appendChild(imageBox);
 
-    names
-      .filter(name => name !== "Barcha mahallalar")
-      .forEach(name => {
-        mahallaSelect.add(new Option(name, name));
-      });
-  };
+  const body = document.createElement("div");
+  body.className = "listing-body";
+
+  body.appendChild(
+    createText(
+      "h3",
+      `${item.rooms} xonali — ${item.type}`
+    )
+  );
+
+  body.appendChild(
+    createText("div", formatPrice(item.price), "price")
+  );
+
+  body.appendChild(
+    createText(
+      "p",
+      `📍 ${item.district}, ${item.mahalla}`,
+      "location"
+    )
+  );
+
+  body.appendChild(
+    createText(
+      "p",
+      `🏠 ${item.type} · 🛠 ${item.repair}`,
+      "details"
+    )
+  );
+
+  if (item.description) {
+    body.appendChild(
+      createText("p", item.description, "description")
+    );
+  }
+
+  const status = createText(
+    "span",
+    item.status === "approved"
+      ? "Tasdiqlangan"
+      : item.status === "rejected"
+      ? "Rad etilgan"
+      : "Tekshirilmoqda",
+    "status " + item.status
+  );
+
+  body.appendChild(status);
+
+  const actions = document.createElement("div");
+  actions.className = "listing-actions";
+
+  const phone = String(item.phone).replace(/[^\d+]/g, "");
+
+  if (phone) {
+    const call = document.createElement("a");
+    call.href = "tel:" + phone;
+    call.textContent = "📞 Qo'ng'iroq";
+    actions.appendChild(call);
+  }
+
+  if (item.photos.length > 1) {
+    actions.appendChild(
+      makeButton("🖼 Rasmlar", () => {
+        let index = 0;
+        const urls = item.photos.map(photoUrl).filter(Boolean);
+
+        if (!urls.length) return;
+
+        showPhoto(urls[index]);
+
+        $("bigPhoto").onclick = () => {
+          index = (index + 1) % urls.length;
+          $("bigPhoto").src = urls[index];
+        };
+      })
+    );
+  }
+
+  body.appendChild(actions);
+  card.appendChild(body);
+
+  return card;
 }
 
-// YANGI E'LON QO'SHISH
-const addHouseForm = getEl("addHouseForm");
+function renderListings(containerId, items, admin = false) {
+  const container = $(containerId);
+  if (!container) return;
 
-if (addHouseForm) {
-  addHouseForm.addEventListener("submit", event => {
-    event.preventDefault();
+  container.innerHTML = "";
 
-    const phone = getEl("addPhone").value.trim();
+  if (!items.length) {
+    container.appendChild(
+      createText("p", "Hozircha e'lonlar mavjud emas.")
+    );
+    return;
+  }
 
-    const house = {
-      id: Date.now(),
-      district: getEl("addDistrict").value,
-      mahalla: getEl("addMahalla").value,
-      houseType: getEl("addHouseType").value,
-      rooms: Number(getEl("addRooms").value),
-      repair: getEl("addRepair").value,
-      price: Number(getEl("addPrice").value),
-      phone: phone,
-      description: getEl("addDescription").value.trim(),
-      status: "Kutilmoqda"
-    };
-
-    const myHouses = readLocal("ijaraMyHouses", []);
-    myHouses.push(house);
-
-    if (writeLocal("ijaraMyHouses", myHouses)) {
-      getEl("addMessage").textContent =
-        "✅ E'lon qurilmangizda saqlandi. " +
-        "Telegram botga hali yuborilmadi.";
-
-      addHouseForm.reset();
-    }
+  items.forEach(item => {
+    container.appendChild(createListingCard(item, admin));
   });
 }
 
-// PROFILNI SAQLASH
+function renderSaved() {
+  renderListings(
+    "savedResults",
+    listings.filter(item => savedIds.has(item.id))
+  );
+}
+
+function renderAll() {
+  renderListings("homeListings", listings.slice(0, 12));
+  renderListings("results", listings);
+  renderSaved();
+}
+
+function searchHouses() {
+  const district = $("searchDistrict").value;
+  const mahalla = $("searchMahalla").value;
+  const type = $("searchType").value;
+  const room = $("searchRooms").value;
+  const repair = $("searchRepair").value;
+  const price = Number($("searchPrice").value) || 0;
+
+  const filtered = listings.filter(item => {
+    if (district && item.district !== district) return false;
+    if (mahalla && item.mahalla !== mahalla) return false;
+    if (type && item.type !== type) return false;
+    if (room && String(item.rooms) !== room) return false;
+    if (repair && item.repair !== repair) return false;
+    if (price && Number(item.price) > price) return false;
+    return true;
+  });
+
+  renderListings("results", filtered);
+  showToast(`${filtered.length} ta e'lon topildi`);
+}
+
+async function loadListings() {
+  if (!API_URL) {
+    renderAll();
+    showToast("Server ulanmaguncha e'lonlar yuklanmaydi");
+    return;
+  }
+
+  try {
+    const data = await api("/api/listings");
+    listings = Array.isArray(data)
+      ? data.map(normalizeListing)
+      : (data.listings || []).map(normalizeListing);
+
+    renderAll();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function submitListing(event) {
+  event.preventDefault();
+
+  if (!API_URL) {
+    showToast("Avval serverni ulash kerak");
+    return;
+  }
+
+  const phone = $("addPhone").value.trim();
+
+  if (!/^\+998\d{9}$/.test(phone)) {
+    showToast("Telefonni +998901234567 shaklida kiriting");
+    return;
+  }
+
+  const files = [...$("addPhotos").files];
+
+  if (files.length > 5) {
+    showToast("5 tagacha rasm tanlang");
+    return;
+  }
+
+  for (const file of files) {
+    if (file.size > 3 * 1024 * 1024) {
+      showToast("Har bir rasm 3 MB dan kichik bo'lsin");
+      return;
+    }
+  }
+
+  const form = new FormData();
+
+  const fields = {
+    district: $("addDistrict").value,
+    mahalla: $("addMahalla").value,
+    type: $("addType").value,
+    rooms: $("addRooms").value,
+    repair: $("addRepair").value,
+    price: $("addPrice").value,
+    phone,
+    description: $("addDescription").value,
+    client_id: clientId
+  };
+
+  Object.entries(fields).forEach(([key, value]) => {
+    form.append(key, value);
+  });
+
+  files.forEach(file => form.append("photos", file));
+
+  try {
+    await api("/api/listings", {
+      method: "POST",
+      body: form
+    });
+
+    $("addForm").reset();
+    updateMahallas("add");
+    $("addMessage").textContent =
+      "E'lon yuborildi. Admin tasdiqlashini kuting.";
+
+    showToast("E'lon muvaffaqiyatli yuborildi");
+    showPage("home");
+    await loadListings();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+function renderProfile() {
+  const profile = JSON.parse(
+    localStorage.getItem("ijaraProfile") || "{}"
+  );
+
+  $("profileName").value = profile.name || "";
+  $("profilePhone").value = profile.phone || "";
+
+  const mine = listings.filter(
+    item => item.client_id === clientId
+  );
+
+  renderListings("myListings", mine);
+}
+
 function saveProfile() {
   const profile = {
-    name: getEl("profileName").value.trim(),
-    phone: getEl("profilePhone").value.trim()
+    name: $("profileName").value.trim(),
+    phone: $("profilePhone").value.trim()
   };
 
-  if (writeLocal("ijaraProfile", profile)) {
-    getEl("profileMessage").textContent =
-      "✅ Profil saqlandi!";
-  }
-}
-
-// PROFILNI YUKLASH
-function loadProfile() {
-  const profile = readLocal("ijaraProfile", {
-    name: "",
-    phone: ""
-  });
-
-  getEl("profileName").value = profile.name || "";
-  getEl("profilePhone").value = profile.phone || "";
-}
-
-// MENING E'LONLARIM
-function renderMyHouses() {
-  const container = getEl("myHouses");
-  if (!container) return;
-
-  const myHouses = readLocal("ijaraMyHouses", []);
-  container.innerHTML = "";
-
-  if (!myHouses.length) {
-    container.textContent =
-      "Hozircha e'lonlaringiz yo'q.";
-    return;
-  }
-
-  myHouses.forEach(house => {
-    const card = document.createElement("div");
-    card.className = "result-card";
-
-    const title = document.createElement("h3");
-    title.textContent = "🏠 " + house.houseType;
-
-    const address = document.createElement("p");
-    address.textContent =
-      "📍 " + house.district + ", " + house.mahalla;
-
-    const price = document.createElement("p");
-    price.textContent =
-      "💰 " + house.price.toLocaleString("en-US") +
-      " so'm / oy";
-
-    const status = document.createElement("p");
-    status.textContent = "📋 Holat: " + house.status;
-
-    card.append(title, address, price, status);
-    container.appendChild(card);
-  });
-}
-
-// SAQLANGAN UYLAR
-function renderSavedHouses() {
-  const container = getEl("savedResults");
-  if (!container) return;
-
-  const saved = readLocal("ijaraSavedHouses", []);
-  container.innerHTML = "";
-
-  if (!saved.length) {
-    container.textContent =
-      "Hozircha saqlangan uylar yo'q.";
-    return;
-  }
-
-  saved.forEach(house => {
-    const card = document.createElement("div");
-    card.className = "result-card";
-
-    const title = document.createElement("h3");
-    title.textContent = "🏠 " + house.houseType;
-
-    const address = document.createElement("p");
-    address.textContent =
-      "📍 " + house.district;
-
-    card.append(title, address);
-    container.appendChild(card);
-  });
-}
-
-// BOSHLANG'ICH SAHIFA
-showPage("homePage");
-
-// IJARAMAKON QO'SHIMCHA FUNKSIYALARI TUGADI
-
-/* =====================================
-   E'LON BERISH - CHIROYLI TANLASH
-===================================== */
-
-let activeAddPicker = null;
-
-function openAddPicker(type) {
-  if (
-    type === "mahalla" &&
-    !getEl("addDistrict").value
-  ) {
-    alert("Avval tuman yoki shaharni tanlang!");
-    return;
-  }
-
-  activeAddPicker = type;
-
-  const title =
-    type === "district"
-      ? "🏛️ Tuman yoki shahar"
-      : "📍 Mahallani tanlang";
-
-  getEl("modalTitle").textContent = title;
-  getEl("modalSearch").value = "";
-
-  renderAddOptions();
-
-  getEl("pickerModal").hidden = false;
-}
-
-function renderAddOptions() {
-  const list = getEl("modalList");
-  list.innerHTML = "";
-
-  const type = activeAddPicker;
-
-  let items =
-    type === "district"
-      ? districts.filter(
-          name => name !== "Barcha hududlar"
-        )
-      : (mahallalar[getEl("addDistrict").value] || [])
-          .filter(
-            name => name !== "Barcha mahallalar"
-          );
-
-  const search = getEl("modalSearch")
-    .value.toLocaleLowerCase("uz");
-
-  items = items.filter(name =>
-    name.toLocaleLowerCase("uz").includes(search)
+  localStorage.setItem(
+    "ijaraProfile",
+    JSON.stringify(profile)
   );
 
-  if (!items.length) {
-    const message = document.createElement("p");
-    message.className = "empty-message";
-    message.textContent = "Ma'lumot topilmadi";
-    list.appendChild(message);
-    return;
-  }
+  $("profileMessage").textContent = "Profil saqlandi";
+  showToast("Profil saqlandi");
+}
 
-  items.forEach(name => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "option-item";
+function updateSelectedCount() {
+  $("selectedCount").textContent =
+    `${selectedIds.size} ta tanlandi`;
+}
 
-    const selected =
-      getEl("add" +
-        (type === "district" ? "District" : "Mahalla")
-        .slice(0)
-      );
+function renderStats(items) {
+  const stats = $("stats");
+  stats.innerHTML = "";
 
-    const fieldId =
-      type === "district"
-        ? "addDistrict"
-        : "addMahalla";
+  const values = [
+    ["Jami", items.length],
+    ["Kutilmoqda", items.filter(x => x.status === "pending").length],
+    ["Tasdiqlangan", items.filter(x => x.status === "approved").length],
+    ["Rad etilgan", items.filter(x => x.status === "rejected").length]
+  ];
 
-    const isSelected =
-      getEl(fieldId).value === name;
+  values.forEach(([name, count]) => {
+    const box = document.createElement("div");
+    box.className = "stat";
 
-    if (isSelected) {
-      item.classList.add("selected");
-    }
+    box.appendChild(createText("strong", count));
+    box.appendChild(createText("span", name));
 
-    const label = document.createElement("span");
-    label.textContent = name;
-
-    const check = document.createElement("span");
-    check.className = "check";
-    check.textContent = isSelected ? "✓" : "○";
-
-    item.append(label, check);
-
-    item.onclick = () => {
-      getEl(fieldId).value = name;
-
-      getEl(fieldId + "Picker").textContent =
-        (type === "district" ? "🏛️ " : "📍 ") +
-        name;
-
-      if (type === "district") {
-        getEl("addMahalla").value = "";
-        getEl("addMahallaPicker").textContent =
-          "📍 Mahallani tanlang";
-      }
-
-      closePicker();
-      activeAddPicker = null;
-    };
-
-    list.appendChild(item);
+    stats.appendChild(box);
   });
 }
 
-// QIDIRUV MAYDONINI IKKALA BO'LIMGA MOSLASH
-const oldFilterOptions = filterOptions;
+async function loadAdmin() {
+  try {
+    const data = await api("/api/admin/listings", {}, true);
 
-filterOptions = function() {
-  if (activeAddPicker) {
-    renderAddOptions();
-  } else {
-    oldFilterOptions();
+    adminListings = Array.isArray(data)
+      ? data
+      : data.listings || [];
+
+    selectedIds.clear();
+    updateSelectedCount();
+
+    $("adminLogin").hidden = true;
+    $("adminDashboard").hidden = false;
+
+    renderStats(adminListings);
+    filterAdmin();
+  } catch (error) {
+    $("adminLogin").hidden = false;
+    $("adminDashboard").hidden = true;
+    $("adminMessage").textContent = error.message;
   }
-};
-
-// OYNANI YOPISHNI MOSLASH
-const oldClosePicker = closePicker;
-
-closePicker = function() {
-  oldClosePicker();
-  activeAddPicker = null;
-};
-
-// E'LON FORMASIDAGI ESKI SELECT KODINI
-// ISHLATMASLIK UCHUN initAddForm NI YANGILASH
-initAddForm = function() {
-  // Tuman va mahallalar endi
-  // umumiy chiroyli oynadan tanlanadi.
-};
-
-/* IJARAMAKON - E'LON TANLASH TUZATISHI */
-
-function openAddPicker(type) {
-  if (type === "mahalla" &&
-      !getEl("addDistrict").value) {
-    alert("Avval tumanni tanlang!");
-    return;
-  }
-
-  activeAddPicker = type;
-  activePicker = null;
-
-  getEl("modalTitle").textContent = titles[type];
-  getEl("modalSearch").value = "";
-
-  renderAddOptions();
-  getEl("pickerModal").hidden = false;
 }
 
-function renderAddOptions() {
-  const type = activeAddPicker;
-  const list = getEl("modalList");
-  list.innerHTML = "";
+function filterAdmin() {
+  const filter = $("adminFilter").value;
 
-  let items = [];
-
-  if (type === "district") {
-    items = districts.filter(
-      x => x !== "Barcha hududlar"
-    );
-  } else if (type === "mahalla") {
-    items = (mahallalar[
-      getEl("addDistrict").value
-    ] || []).filter(
-      x => x !== "Barcha mahallalar"
-    );
-  } else {
-    items = (options[type] || []).filter(
-      x => !isDefault(x)
-    );
-  }
-
-  const search = getEl("modalSearch")
-    .value.toLowerCase();
-
-  items = items.filter(x =>
-    x.toLowerCase().includes(search)
+  const items = adminListings.filter(
+    item => filter === "all" || item.status === filter
   );
 
-  if (!items.length) {
-    list.textContent = "Ma'lumot topilmadi";
+  renderListings("adminListings", items, true);
+}
+
+async function bulkAction(action) {
+  if (!selectedIds.size) {
+    showToast("Avval e'lonlarni tanlang");
     return;
   }
 
-  const ids = {
-    district: "addDistrict",
-    mahalla: "addMahalla",
-    houseType: "addHouseType",
-    rooms: "addRooms",
-    repair: "addRepair"
-  };
+  if (action === "delete" &&
+      !confirm("Tanlangan e'lonlar o'chirilsinmi?")) {
+    return;
+  }
 
-  items.forEach(name => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "option-item";
+  try {
+    await api("/api/admin/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ids: [...selectedIds],
+        action
+      })
+    }, true);
 
-    const field = getEl(ids[type]);
+    showToast("Amal bajarildi");
+    await loadAdmin();
+    await loadListings();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
 
-    if (field.value === name) {
-      btn.classList.add("selected");
+function initializeEvents() {
+  document.querySelectorAll("[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      showPage(btn.dataset.page);
+    });
+  });
+
+  $("searchButton").addEventListener("click", searchHouses);
+  $("addForm").addEventListener("submit", submitListing);
+  $("saveProfile").addEventListener("click", saveProfile);
+
+  $("closePhoto").addEventListener("click", () => {
+    $("photoDialog").close();
+    $("bigPhoto").onclick = null;
+  });
+
+  $("adminEnter").addEventListener("click", () => {
+    adminKey = $("adminKey").value.trim();
+
+    if (!adminKey) {
+      showToast("Admin kalitini kiriting");
+      return;
     }
 
-    btn.textContent = name;
-
-    btn.onclick = () => {
-      field.value = name;
-
-      getEl(ids[type] + "Picker").textContent =
-        icons[type] + " " + name;
-
-      if (type === "district") {
-        getEl("addMahalla").value = "";
-        getEl("addMahallaPicker").textContent =
-          "📍 Mahallani tanlang";
-      }
-
-      closePicker();
-    };
-
-    list.appendChild(btn);
+    loadAdmin();
   });
+
+  $("adminLogout").addEventListener("click", () => {
+    adminKey = "";
+    $("adminKey").value = "";
+    $("adminLogin").hidden = false;
+    $("adminDashboard").hidden = true;
+  });
+
+  $("adminRefresh").addEventListener("click", loadAdmin);
+  $("adminFilter").addEventListener("change", filterAdmin);
+
+  $("selectAll").addEventListener("change", event => {
+    selectedIds.clear();
+
+    if (event.target.checked) {
+      adminListings.forEach(item => selectedIds.add(item.id));
+    }
+
+    updateSelectedCount();
+    filterAdmin();
+  });
+
+  $("bulkApprove").addEventListener(
+    "click", () => bulkAction("approve")
+  );
+
+  $("bulkReject").addEventListener(
+    "click", () => bulkAction("reject")
+  );
+
+  $("bulkDelete").addEventListener(
+    "click", () => bulkAction("delete")
+  );
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  initializeSelects();
+  initializeEvents();
+  showPage("home");
+  loadListings();
+});

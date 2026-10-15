@@ -518,3 +518,105 @@ button:active {
   text-align: left !important;
   font-size: 16px !important;
 }
+
+/* IJARAMAKON - DIZAYNNI YAXSHILASH */
+
+/* Sahifa ichidagi joylashuv */
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Xush kelibsiz qismi */
+#homePage > h1,
+#homePage > h2,
+#homePage > p,
+#homePage > .home-actions,
+#homePage > .menu,
+#homePage > .main-menu {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+#homePage > h1,
+#homePage > h2 {
+  line-height: 1.3;
+}
+
+/* Barcha oddiy tugmalar */
+button:not(.option-item):not(.modal-option) {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Orqaga tugmalari */
+button[onclick*="back"],
+button[onclick*="Back"],
+.back-btn,
+.back-button {
+  background: white;
+  color: #2563eb;
+  border: 1px solid #dbe5f3;
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 12px 0;
+  box-shadow: 0 3px 10px rgba(0,0,0,.05);
+}
+
+/* Yopish tugmalari */
+.close,
+.close-btn,
+.modal-close,
+button[onclick*="closeModal"] {
+  background: #f1f5f9;
+  color: #334155;
+  border: none;
+  border-radius: 12px;
+  min-width: 42px;
+  min-height: 42px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* Saqlash va yuborish tugmalari */
+button[onclick*="saveProfile"],
+button[onclick*="submit"],
+button[onclick*="Submit"],
+button[type="submit"],
+.save-btn,
+.submit-btn {
+  background: linear-gradient(135deg, #1769e9, #3994ff);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 15px 22px;
+  font-size: 16px;
+  font-weight: 700;
+  min-height: 50px;
+  box-shadow: 0 5px 14px rgba(37,99,235,.18);
+}
+
+/* Telefon ekrani */
+@media (max-width: 600px) {
+  .page {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  #homePage > h1,
+  #homePage > h2,
+  #homePage > p {
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+
+  input, select, textarea {
+    max-width: 100%;
+  }
+}

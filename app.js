@@ -951,7 +951,7 @@ const TOUR_STEPS = [
   ["[data-page='add'].nav-btn", "E'lon berish", "Uyingizni ijaraga berish uchun rasm va ma'lumotlarni joylaysiz."],
   ["[data-page='saved'].nav-btn", "Saqlangan", "Yoqtirgan uylaringizni keyinroq qayta ko'rish uchun saqlaysiz."],
   ["[data-page='profile'].nav-btn", "Mening profilim", "Shaxsiy ma'lumotlaringizni boshqarasiz."],
-  ["#settingsToggle", "Uch chiziqli menyu", "Bu yerdan ko'rinishni sozlash, yordam olish va +998 88 600 63 00 raqamiga qo'ng'iroq qilish mumkin."]
+  ["#settingsToggle", "Yordam va sozlamalar", "Yana tushuntirish kerak bo‘lsa, shu uch chiziqli menyuga kiring va «Saytdan foydalanishni o‘rganish» tugmasini bosing. Bu yerda aloqa raqami va «Biz haqimizda» bo‘limi ham bor."]
 ];
 function setupGuidedTour() {
   const layer = document.getElementById("tourLayer");
@@ -1008,7 +1008,7 @@ function setupGuidedTour() {
 
   document.getElementById("restartTour")?.addEventListener("click",()=>{document.getElementById("settingsClose")?.click();start();});
   window.addEventListener("resize",()=>{if(!layer.classList.contains("hidden"))show();});
-  if (readStorage("im-tour-v1")!=="done") setTimeout(start,900);
+  if (readStorage("im-tour-v1")!=="done") requestAnimationFrame(() => requestAnimationFrame(start));
 }
 
 document.addEventListener("DOMContentLoaded", () => {

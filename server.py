@@ -134,6 +134,26 @@ def initialize():
             primary = "BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT"
             db.execute(f"CREATE TABLE IF NOT EXISTS {table} (id {primary}, {fields})")
         db.execute("CREATE TABLE IF NOT EXISTS listing_gallery (id " + ("BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT") + ", listing_id INTEGER NOT NULL, image_data " + ("BYTEA" if DATABASE_URL else "BLOB") + " NOT NULL, content_type TEXT NOT NULL DEFAULT 'image/jpeg')")
+        # Telegram-verified phone sign-in foundation. No existing house/profile rows are altered.
+        db.execute("""CREATE TABLE IF NOT EXISTS telegram_auth_users (
+            telegram_id TEXT PRIMARY KEY,
+            phone TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL
+        )""")
+        db.execute("""CREATE TABLE IF NOT EXISTS telegram_auth_challenges (
+            challenge_hash TEXT PRIMARY KEY,
+            phone TEXT NOT NULL,
+            telegram_id TEXT,
+            code_hash TEXT,
+            expires_at INTEGER NOT NULL,
+            attempts INTEGER NOT NULL DEFAULT 0,
+            verified INTEGER NOT NULL DEFAULT 0
+        )""")
+        db.execute("""CREATE TABLE IF NOT EXISTS telegram_auth_sessions (
+            token_hash TEXT PRIMARY KEY,
+            telegram_id TEXT NOT NULL,
+            expires_at INTEGER NOT NULL
+        )""")
         db.execute("CREATE TABLE IF NOT EXISTS admin_security (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         db.commit()
 

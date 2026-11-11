@@ -512,3 +512,21 @@ body{background:radial-gradient(circle at 85% 0%,rgba(72,150,249,.075),transpare
  #home .section-heading{margin-top:17px;}
 }
 @media(max-width:370px){.quick-discovery{flex-direction:column;align-items:stretch}.quick-discovery-btn{width:100%;}}
+
+/* Khiva photographic hero: dark blue gradient maintains text contrast */
+#home .welcome{
+  background-image:linear-gradient(90deg,rgba(9,37,83,.92) 0%,rgba(12,57,112,.79) 49%,rgba(13,70,136,.43) 100%),url("https://commons.wikimedia.org/wiki/Special:FilePath/Khiva_Itchan_Kala.JPG?width=1600");
+  background-position:center,center 52%;
+  background-size:cover;
+  background-repeat:no-repeat;
+  color:#fff;
+  overflow:hidden;
+}
+#home .welcome::after{background:linear-gradient(0deg,rgba(6,31,72,.20),transparent 60%);}
+#home .hero-art{opacity:.25;}
+#home .hero-content{position:relative;z-index:2;}
+#home .hero-photo-credit{position:absolute;right:17px;bottom:9px;font-size:9px;color:rgba(255,255,255,.75);z-index:2;max-width:55%;text-align:right;}
+@media(max-width:600px){
+ #home .welcome{background-image:linear-gradient(90deg,rgba(8,35,80,.91),rgba(12,55,109,.69)),url("https://commons.wikimedia.org/wiki/Special:FilePath/Khiva_Itchan_Kala.JPG?width=960");background-position:center,58% center;padding-bottom:31px;}
+ #home .hero-photo-credit{right:14px;bottom:7px;max-width:95%;font-size:8px;}
+}

@@ -656,10 +656,10 @@ body.phone-login-open{overflow:hidden}
 .tour-layer.hidden{display:none}
 .tour-blur{position:fixed;z-index:0;background:rgba(12,27,50,.40);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:auto}
 .tour-corner{position:fixed;z-index:0;background:rgba(12,27,50,.40);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:auto}
-.tour-corner-tl{-webkit-mask-image:radial-gradient(circle at bottom right,transparent calc(100% - 1px),#000 100%);mask-image:radial-gradient(circle at bottom right,transparent calc(100% - 1px),#000 100%)}
-.tour-corner-tr{-webkit-mask-image:radial-gradient(circle at bottom left,transparent calc(100% - 1px),#000 100%);mask-image:radial-gradient(circle at bottom left,transparent calc(100% - 1px),#000 100%)}
-.tour-corner-bl{-webkit-mask-image:radial-gradient(circle at top right,transparent calc(100% - 1px),#000 100%);mask-image:radial-gradient(circle at top right,transparent calc(100% - 1px),#000 100%)}
-.tour-corner-br{-webkit-mask-image:radial-gradient(circle at top left,transparent calc(100% - 1px),#000 100%);mask-image:radial-gradient(circle at top left,transparent calc(100% - 1px),#000 100%)}
+.tour-corner-tl{-webkit-mask-image:radial-gradient(circle at bottom right,transparent 21px,#000 22px);mask-image:radial-gradient(circle at bottom right,transparent 21px,#000 22px)}
+.tour-corner-tr{-webkit-mask-image:radial-gradient(circle at bottom left,transparent 21px,#000 22px);mask-image:radial-gradient(circle at bottom left,transparent 21px,#000 22px)}
+.tour-corner-bl{-webkit-mask-image:radial-gradient(circle at top right,transparent 21px,#000 22px);mask-image:radial-gradient(circle at top right,transparent 21px,#000 22px)}
+.tour-corner-br{-webkit-mask-image:radial-gradient(circle at top left,transparent 21px,#000 22px);mask-image:radial-gradient(circle at top left,transparent 21px,#000 22px)}
 .tour-spot{position:fixed;z-index:1;pointer-events:none;border:2px solid #86c6ff;border-radius:22px;box-shadow:0 0 0 3px rgba(130,198,255,.25);box-sizing:border-box}
 .tour-tip{position:fixed;z-index:2;box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:8px 4px;background:transparent!important;color:#fff!important;border:0!important;border-radius:0;box-shadow:none!important;text-align:left;line-height:1.5;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 .tour-tip:before{display:none!important}
@@ -673,3 +673,6 @@ body.phone-login-open{overflow:hidden}
 
 /* On phones, keep the next-step control to the right of the explanation. */
 @media(max-width:600px){.tour-actions{justify-content:flex-end;width:100%}#tourNext{margin-left:auto;min-width:126px;text-align:center}}
+
+/* Accessible about section inside the existing settings menu */
+.about-ijaramakon{font-size:13px;line-height:1.65;color:var(--text,#334155);margin:8px 0 0}

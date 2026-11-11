@@ -651,27 +651,36 @@ async function showDetail(item) {
   const photo = photos.length
     ? `<div class="detail-gallery"><div class="gallery-stage"><img class="detail-photo" id="galleryMainPhoto" src="${escapeHTML(photos[0])}" alt="Uy rasmi"><button class="gallery-arrow gallery-prev" type="button" aria-label="Oldingi rasm">‹</button><button class="gallery-arrow gallery-next" type="button" aria-label="Keyingi rasm">›</button><span class="gallery-count">1 / ${photos.length}</span></div><div class="gallery-thumbs">${photos.map((src,i)=>`<button class="gallery-thumb ${i===0?"active":""}" type="button" data-index="${i}" aria-label="${i+1}-rasm"><img src="${escapeHTML(src)}" alt="Uy rasmi ${i+1}" loading="lazy"></button>`).join("")}</div></div>`
     : `<div class="listing-photo photo-placeholder">${listingIcon("home")}</div>`;
+  const hasCoordinates = item.latitude != null && item.longitude != null &&
+    Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude)) &&
+    Math.abs(Number(item.latitude)) <= 90 && Math.abs(Number(item.longitude)) <= 180;
+  const locationName = [item.district, item.mahalla].filter(Boolean).join(", ");
+  wrapper.className = "listing-detail-layout";
   wrapper.innerHTML = `
-    ${photo}
-    <h2>${escapeHTML(item.type)}</h2>
-    <div class="listing-price">
-      ${money(item.price)} so'm/oy
+    <div class="detail-gallery-column">
+      ${photo}
     </div>
-    <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</p>
-    <p><b>Hudud:</b> ${escapeHTML(item.district)}</p>
-    <p><b>Mahalla:</b> ${escapeHTML(item.mahalla)}</p>
-    <p><b>Manzil:</b> ${escapeHTML(item.address)}</p>
-    <p><b>Xonalar:</b> ${escapeHTML(item.rooms)}</p>
-    <p><b>Ta'mir:</b> ${escapeHTML(item.repair)}</p>
-    <p><b>Telefon:</b> ${escapeHTML(item.phone)}</p>
-    <p class="detail-description">
-      ${escapeHTML(item.description)}
-    </p>
-    <a class="primary-btn"
-       style="display:inline-block;text-decoration:none"
-       href="${escapeHTML(phoneURL(item.phone))}">
-      📞 Qo'ng'iroq qilish
-    </a>
+    <div class="detail-information-column">
+      <div class="detail-heading"><span class="detail-chip">Ijara</span><span class="detail-chip">${escapeHTML(item.type)}</span></div>
+      <h2>${escapeHTML(item.type)} — ${escapeHTML(item.mahalla)}</h2>
+      <div class="detail-main-price">${money(item.price)} so'm <span>/ oy</span></div>
+      <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</p>
+      <div class="detail-contact">
+        <a class="primary-btn" href="${escapeHTML(phoneURL(item.phone))}">📞 Qo'ng'iroq qilish</a>
+        <span class="detail-phone">${escapeHTML(item.phone)}</span>
+      </div>
+      <h3>Uy haqida ma'lumot</h3>
+      <dl class="detail-facts">
+        <div><dt>Uy turi</dt><dd>${escapeHTML(item.type)}</dd></div>
+        <div><dt>Xonalar soni</dt><dd>${escapeHTML(item.rooms)}</dd></div>
+        <div><dt>Ta'mir holati</dt><dd>${escapeHTML(item.repair)}</dd></div>
+        <div><dt>Manzil</dt><dd>${escapeHTML(item.address)}</dd></div>
+      </dl>
+      ${item.description ? `<p class="detail-description">${escapeHTML(item.description)}</p>` : ""}
+      <h3>Joylashuv</h3>
+      <p class="detail-location-name">${listingIcon("pin")} ${escapeHTML(locationName)}</p>
+      ${hasCoordinates ? '<div id="detailLocationMap" class="detail-location-map" role="region" aria-label="Uy joylashuvi xaritasi"></div>' : '<div class="detail-location-empty">Bu e\'lon uchun xaritada aniq joylashuv belgilanmagan.</div>'}
+    </div>
   `;
 
   content.appendChild(wrapper);
@@ -696,6 +705,18 @@ async function showDetail(item) {
   if (link && !phoneURL(item.phone)) link.remove();
 
   $("detailModal").classList.remove("hidden");
+  if (hasCoordinates && typeof L !== "undefined") {
+    const lat = Number(item.latitude), lng = Number(item.longitude);
+    const map = L.map(wrapper.querySelector("#detailLocationMap"), {scrollWheelZoom:false})
+      .setView([lat,lng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:'&copy; OpenStreetMap contributors', maxZoom:19
+    }).addTo(map);
+    L.marker([lat,lng]).addTo(map).bindPopup(escapeHTML(locationName));
+    setTimeout(()=>map.invalidateSize(), 100);
+    const close = $("closeDetail");
+    close.addEventListener("click", ()=>map.remove(), {once:true});
+  }
   document.body.style.overflow = "hidden";
   $("closeDetail").focus();
   if (item.status === "approved") {

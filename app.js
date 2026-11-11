@@ -1328,20 +1328,39 @@ document.addEventListener("DOMContentLoaded", () => {
     let active = null;
     let oldOverflow = "";
 
-    const fieldInfo = {
-      District: ["🏛️", "Tuman yoki shahar"],
-      Mahalla: ["📍", "Mahallani tanlang"],
-      Type: ["🏠", "Uy turi"],
-      Rooms: ["🚪", "Xonalar soni"],
-      Repair: ["🛠️", "Ta'mir holati"]
+    // Consistent, stroke-based icons instead of platform-dependent emoji.
+    const pickerPaths = {
+      District: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5M9 21v-8h6v8"/>',
+      Mahalla: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+      Type: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8"/>',
+      Rooms: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M15 12h.01"/>',
+      Repair: '<path d="m14.7 6.3 3 3M4 20l8.7-8.7a5 5 0 0 0 6.6-6.6l-3.2 3.2-3-3L16.3 1.7a5 5 0 0 0-6.6 6.6L1 17l3 3Z"/>'
     };
+    const fieldInfo = {
+      District: "Tuman yoki shahar",
+      Mahalla: "Mahallani tanlang",
+      Type: "Uy turi",
+      Rooms: "Xonalar soni",
+      Repair: "Ta'mir holati"
+    };
+    function pickerIcon(name) {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "1.7");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("class", "im-premium-field-icon");
+      svg.setAttribute("aria-hidden", "true");
+      svg.innerHTML = pickerPaths[name];
+      return svg;
+    }
 
     function sync(binding) {
       const option = binding.select.selectedOptions[0];
 
-      binding.label.textContent =
-        binding.icon + " " +
-        (option?.textContent || binding.title);
+      binding.label.textContent = option?.textContent || binding.title;
 
       binding.button.disabled = binding.select.disabled;
     }
@@ -1418,7 +1437,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (binding.select.disabled) return;
 
       active = binding;
-      title.textContent = binding.icon + " " + binding.title;
+      title.textContent = binding.title;
       query.value = "";
 
       render();
@@ -1441,7 +1460,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.type = "button";
         button.className = "im-picker-button";
         button.setAttribute("aria-haspopup", "dialog");
-        button.setAttribute("aria-label", info[1]);
+        button.setAttribute("aria-label", info);
 
         const label = document.createElement("span");
         const arrow = document.createElement("span");
@@ -1449,7 +1468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         arrow.className = "im-picker-arrow";
         arrow.textContent = "›";
 
-        button.append(label, arrow);
+        button.append(pickerIcon(suffix), label, arrow);
         select.insertAdjacentElement("afterend", button);
 
         select.classList.add("im-original-select");
@@ -1459,8 +1478,7 @@ document.addEventListener("DOMContentLoaded", () => {
           select,
           button,
           label,
-          icon: info[0],
-          title: info[1]
+          title: info
         };
 
         bindings.push(binding);

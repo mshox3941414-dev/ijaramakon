@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=11">
+  <link rel="stylesheet" href="./style.css?v=12">
   <script src="./app.js?v=20261015-1841" defer></script>
 </head>
 <body>
@@ -213,5 +213,53 @@
   <div id="toast" class="toast hidden" role="status"></div>
 
   <footer class="footer">© 2026 IjaraMakon — Xorazm</footer>
+
+<script>
+/* Self-contained lightweight outline icons; no external library or network needed. */
+(() => {
+  const paths = {
+    home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-8h6v8"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    heart: '<path d="M20.8 8.6c0 4.4-8.8 10.4-8.8 10.4S3.2 13 3.2 8.6a4.6 4.6 0 0 1 8.8-1.8 4.6 4.6 0 0 1 8.8 1.8z"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    shield: '<path d="m12 2 8 4v6c0 5-3.5 8.2-8 10-4.5-1.8-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/>',
+    map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/>',
+    pin: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2.5"/>',
+    arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>'
+  };
+  const svg = name => '<svg class="ui-icon" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[name] + '</svg>';
+  const navIcons = {home:'home',search:'search',add:'plus',saved:'heart',profile:'user',admin:'shield'};
+  function enhance() {
+    document.querySelectorAll('.nav-btn[data-page]').forEach(button => {
+      const name = navIcons[button.dataset.page];
+      if (!name || button.querySelector('svg')) return;
+      const label = button.textContent.replace(/^[^\p{L}\p{N}]+/u, '').trim();
+      button.replaceChildren();
+      button.insertAdjacentHTML('afterbegin',svg(name));
+      const span = document.createElement('span');
+      span.textContent = label;
+      button.append(span);
+    });
+    const selectors = [
+      ['.hero-primary','search'],['.hero-secondary','plus'],
+      ['.brand-icon','home'],['.admin-shortcut','shield']
+    ];
+    selectors.forEach(([selector,name]) => document.querySelectorAll(selector).forEach(el => {
+      if (el.querySelector('svg')) return;
+      if (selector === '.brand-icon' || selector === '.admin-shortcut') {
+        el.innerHTML = svg(name);
+      } else {
+        const label = el.textContent.replace(/^[^\p{L}\p{N}]+/u, '').trim();
+        el.replaceChildren();
+        el.insertAdjacentHTML('afterbegin',svg(name));
+        const span = document.createElement('span'); span.textContent = label; el.append(span);
+      }
+    }));
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',enhance);
+  else enhance();
+})();
+</script>
 </body>
 </html>

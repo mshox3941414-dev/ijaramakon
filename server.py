@@ -2,6 +2,8 @@ import os
 import re
 import hmac
 import sqlite3
+import psycopg
+from psycopg.rows import dict_row
 import threading
 import time
 from datetime import datetime, timezone
@@ -38,6 +40,7 @@ ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 DATA_DIR = Path(os.environ.get("DATA_DIR", "./data"))
 UPLOAD_DIR = DATA_DIR / "uploads"
 DB_PATH = DATA_DIR / "ijaramakon.db"
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -48,7 +51,30 @@ app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 db_lock = threading.RLock()
 
 
+class PgConnection:
+    def __init__(self):
+        self.db = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, kind, value, tb):
+        if kind:
+            self.db.rollback()
+        else:
+            self.db.commit()
+        self.db.close()
+
+    def execute(self, sql, params=()):
+        return self.db.execute(sql.replace("?", "%s"), params)
+
+    def commit(self):
+        self.db.commit()
+
+
 def connect():
+    if DATABASE_URL:
+        return PgConnection()
     db = sqlite3.connect(str(DB_PATH), timeout=30)
     db.row_factory = sqlite3.Row
     return db
@@ -72,6 +98,15 @@ def initialize():
                 photo_url TEXT DEFAULT '',
                 status TEXT DEFAULT 'pending',
                 created_at TEXT NOT NULL
+            )
+        """.replace("id INTEGER PRIMARY KEY AUTOINCREMENT", "id BIGSERIAL PRIMARY KEY") if DATABASE_URL else """
+            CREATE TABLE IF NOT EXISTS houses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                owner TEXT NOT NULL, district TEXT NOT NULL, mahalla TEXT NOT NULL,
+                type TEXT NOT NULL, rooms TEXT NOT NULL, repair TEXT NOT NULL,
+                price INTEGER NOT NULL, phone TEXT NOT NULL, address TEXT NOT NULL,
+                description TEXT DEFAULT '', photo_url TEXT DEFAULT '',
+                status TEXT DEFAULT 'pending', created_at TEXT NOT NULL
             )
         """)
         db.commit()
@@ -294,10 +329,10 @@ def create_house():
             INSERT INTO houses
             (owner, district, mahalla, type, rooms, repair, price,
              phone, address, description, photo_url, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?) RETURNING id
         """, values)
         db.commit()
-        listing_id = cur.lastrowid
+        listing_id = cur.fetchone()["id"] if DATABASE_URL else cur.fetchone()[0]
 
     return jsonify({"ok": True, "id": listing_id, "status": "pending"}), 201
 

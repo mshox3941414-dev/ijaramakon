@@ -657,7 +657,7 @@ async function showDetail(item) {
   const locationName = [item.district, item.mahalla].filter(Boolean).join(", ");
   const smsNumber = String(item.phone || "").replace(/[^+0-9]/g, "");
   const smsMessage = `Assalomu alaykum! IjaraMakon saytida ${item.district}, ${item.mahalla} hududidagi ${item.type} e'loningizni ko'rdim. Uy hali ijaraga berilmaganmi?`;
-  const smsURL = /^\\+?[0-9]{9,15}$/.test(smsNumber)
+  const smsURL = new RegExp("^\\+?[0-9]{9,15}$").test(smsNumber)
     ? `sms:${smsNumber}?body=${encodeURIComponent(smsMessage)}` : "";
   wrapper.className = "listing-detail-layout";
   wrapper.innerHTML = `

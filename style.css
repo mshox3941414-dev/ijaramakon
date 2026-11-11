@@ -781,3 +781,12 @@ html[data-mode="dark"] .premium-file-control{background:#25354e;border-color:#45
 html[data-mode="dark"] .premium-file-action{color:#b8d3ff}
 html[data-mode="dark"] .premium-file-status{color:#b7c6df}
 @media(max-width:480px){.premium-file-control{flex-wrap:wrap}.premium-file-status{flex-basis:100%;padding-left:29px}}
+
+/* Apartment floor selection and listing metadata */
+.apartment-floor-field.hidden{display:none!important}
+.listing-posted-date,.detail-posted-date{display:flex;align-items:center;gap:7px;color:#72839c;font-size:12px;line-height:1.5;margin:8px 0}
+.detail-posted-date{margin-top:15px;padding-top:12px;border-top:1px solid #e5eaf2;font-size:13px}
+.listing-posted-date .premium-ui-icon,.detail-posted-date .premium-ui-icon{width:15px;height:15px;flex:0 0 15px;margin:0}
+.report-btn .premium-ui-icon{width:16px;height:16px;margin-right:5px;vertical-align:-3px;color:#d34452}
+html[data-mode="dark"] .listing-posted-date,html[data-mode="dark"] .detail-posted-date{color:#b6c6df}
+html[data-mode="dark"] .detail-posted-date{border-color:#394b66}

@@ -121,8 +121,11 @@ def initialize():
             db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION")
             db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION")
             db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS view_count INTEGER NOT NULL DEFAULT 0")
+            db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS floor INTEGER")
         else:
             existing = {row["name"] for row in db.execute("PRAGMA table_info(houses)").fetchall()}
+            if "floor" not in existing:
+                db.execute("ALTER TABLE houses ADD COLUMN floor INTEGER")
             if "view_count" not in existing:
                 db.execute("ALTER TABLE houses ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0")
             for column in ("latitude", "longitude"):
@@ -572,6 +575,16 @@ def create_house():
     ):
         return error("Telefon raqami noto'g'ri")
 
+    apartment = clean(form.get("type"), 100).lower() in ("ko'p qavatli uydagi kvartira", "kvartira")
+    floor = None
+    if apartment:
+        try:
+            floor = int(form.get("floor", ""))
+            if not 1 <= floor <= 50:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return error("Kvartira qavatini 1 dan 50 gacha tanlang")
+
     photo_url = ""
     uploads = request.files.getlist("photos")
     if not uploads and "photo" in request.files:
@@ -627,15 +640,15 @@ def create_house():
         clean(form.get("description"), 2000),
         photo_url,
         datetime.now(timezone.utc).isoformat(),
-        latitude, longitude
+        latitude, longitude, floor
     )
 
     with db_lock, connect() as db:
         cur = db.execute("""
             INSERT INTO houses
             (owner, district, mahalla, type, rooms, repair, price,
-             phone, address, description, photo_url, status, created_at, latitude, longitude)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?) RETURNING id
+             phone, address, description, photo_url, status, created_at, latitude, longitude, floor)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?) RETURNING id
         """, values)
         listing_id = cur.fetchone()["id"] if DATABASE_URL else cur.fetchone()[0]
         for data in gallery_data:

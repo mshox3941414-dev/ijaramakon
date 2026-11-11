@@ -703,23 +703,27 @@ async function showDetail(item) {
     if (photos.length === 1) wrapper.querySelectorAll(".gallery-arrow").forEach(btn=>btn.hidden=true);
   }
 
+  // Native phone/SMS links must open directly from the user's tap in Telegram WebView.
+  const publicNumber = String(item.phone || "").replace(/[^+0-9]/g, "");
+  const validPublicNumber = phoneURL(publicNumber) ? publicNumber : "";
   wrapper.querySelectorAll(".detail-contact-action").forEach(button => {
-    button.onclick = async () => {
-      try {
-        const data = await api("/api/listings/" + encodeURIComponent(item.id) + "/contact");
-        const number = String(data.phone || "").replace(/[^+0-9]/g, "");
-        if (!phoneURL(number)) throw new Error("Telefon raqami mavjud emas");
-        $("verifiedContactPhone").textContent = number;
-        if (button.dataset.action === "call") {
-          window.location.href = phoneURL(number);
-        } else {
-          window.location.href = "sms:" + number + "?body=" + encodeURIComponent(smsMessage);
-        }
-      } catch (err) {
-        toast(err.message);
-      }
-    };
+    const isSms = button.dataset.action === "sms";
+    const number = validPublicNumber;
+    if (!number) {
+      button.onclick = () => toast("Telefon raqami mavjud emas");
+      return;
+    }
+    const url = isSms
+      ? "sms:" + number + "?body=" + encodeURIComponent(smsMessage)
+      : phoneURL(number);
+    const link = document.createElement("a");
+    link.href = url;
+    link.className = button.className;
+    link.textContent = button.textContent;
+    link.setAttribute("role", "button");
+    button.replaceWith(link);
   });
+  $("verifiedContactPhone").textContent = validPublicNumber;
 
   $("detailModal").classList.remove("hidden");
   if (hasCoordinates && typeof L !== "undefined") {

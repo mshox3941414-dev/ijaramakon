@@ -655,6 +655,10 @@ async function showDetail(item) {
     Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude)) &&
     Math.abs(Number(item.latitude)) <= 90 && Math.abs(Number(item.longitude)) <= 180;
   const locationName = [item.district, item.mahalla].filter(Boolean).join(", ");
+  const smsNumber = String(item.phone || "").replace(/[^+0-9]/g, "");
+  const smsMessage = `Assalomu alaykum! IjaraMakon saytida ${item.district}, ${item.mahalla} hududidagi ${item.type} e'loningizni ko'rdim. Uy hali ijaraga berilmaganmi?`;
+  const smsURL = /^\\+?[0-9]{9,15}$/.test(smsNumber)
+    ? `sms:${smsNumber}?body=${encodeURIComponent(smsMessage)}` : "";
   wrapper.className = "listing-detail-layout";
   wrapper.innerHTML = `
     <div class="detail-gallery-column">
@@ -667,6 +671,7 @@ async function showDetail(item) {
       <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</p>
       <div class="detail-contact">
         <a class="primary-btn" href="${escapeHTML(phoneURL(item.phone))}">📞 Qo'ng'iroq qilish</a>
+        ${smsURL ? `<a class="detail-sms-btn" href="${escapeHTML(smsURL)}" aria-label="Uy egasiga SMS yozish">✉ SMS yozish</a>` : ""}
         <span class="detail-phone">${escapeHTML(item.phone)}</span>
       </div>
       <h3>Uy haqida ma'lumot</h3>

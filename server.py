@@ -35,6 +35,7 @@ CORS(app, resources={
 
 TOKEN = os.environ.get("BOT_TOKEN", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+MODERATOR_PASSWORD = os.environ.get("MODERATOR_PASSWORD", "")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "./data"))
@@ -118,6 +119,12 @@ def initialize():
             for column in ("latitude", "longitude"):
                 if column not in existing:
                     db.execute(f"ALTER TABLE houses ADD COLUMN {column} REAL")
+        for table, fields in (
+            ("admin_audit", "actor TEXT NOT NULL, action TEXT NOT NULL, listing_id INTEGER, detail TEXT DEFAULT '', created_at TEXT NOT NULL"),
+            ("listing_reports", "listing_id INTEGER NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL, status TEXT DEFAULT 'open'")
+        ):
+            primary = "BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT"
+            db.execute(f"CREATE TABLE IF NOT EXISTS {table} (id {primary}, {fields})")
         db.commit()
 
 
@@ -139,12 +146,22 @@ def execute(sql, params=()):
         return cur.lastrowid
 
 
-def is_admin():
+def admin_role():
     supplied = request.headers.get("X-Admin-Password", "")
-    return bool(
-        ADMIN_PASSWORD
-        and hmac.compare_digest(supplied, ADMIN_PASSWORD)
-    )
+    if ADMIN_PASSWORD and hmac.compare_digest(supplied, ADMIN_PASSWORD):
+        return "admin"
+    if MODERATOR_PASSWORD and hmac.compare_digest(supplied, MODERATOR_PASSWORD):
+        return "moderator"
+    return None
+
+
+def is_admin():
+    return admin_role() is not None
+
+
+def log_admin(db, action, listing_id=None, detail=""):
+    db.execute("INSERT INTO admin_audit (actor, action, listing_id, detail, created_at) VALUES (?, ?, ?, ?, ?)",
+               (admin_role() or "system", action, listing_id, detail, datetime.now(timezone.utc).isoformat()))
 
 
 def error(message, status=400):
@@ -391,7 +408,7 @@ def create_house():
 def admin_listings():
     if not is_admin():
         return error("Admin ruxsati talab qilinadi", 403)
-    return jsonify({"listings": rows("SELECT * FROM houses ORDER BY id DESC")})
+    return jsonify({"listings": rows("SELECT * FROM houses ORDER BY id DESC"), "role": admin_role()})
 
 
 @app.post("/api/admin/listings/<int:listing_id>/<action>")
@@ -412,8 +429,9 @@ def admin_listing_action(listing_id, action):
             "UPDATE houses SET status = ? WHERE id = ?",
             (status_by_action[action], listing_id),
         )
-        db.commit()
         if cur.rowcount == 0:
             return error("E'lon topilmadi", 404)
+        log_admin(db, action, listing_id)
+        db.commit()
 
     return jsonify({"ok": True, "id": listing_id, "status": status_by_action[action]})

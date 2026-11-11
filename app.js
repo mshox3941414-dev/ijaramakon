@@ -1007,6 +1007,7 @@ function setupGuidedTour() {
   document.getElementById("tourNext").onclick=()=>{ if (++index>=TOUR_STEPS.length) close(); else show(); };
 
   document.getElementById("restartTour")?.addEventListener("click",()=>{document.getElementById("settingsClose")?.click();start();});
+  document.getElementById("headerTour")?.addEventListener("click",start);
   window.addEventListener("resize",()=>{if(!layer.classList.contains("hidden"))show();});
   if (readStorage("im-tour-v1")!=="done") requestAnimationFrame(() => requestAnimationFrame(start));
 }

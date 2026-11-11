@@ -964,21 +964,35 @@ function setupGuidedTour() {
     const target = document.querySelector(selector);
     if (!target) { close(); return; }
     const rect = target.getBoundingClientRect();
-    const x = Math.max(5,rect.left-5), y = Math.max(5,rect.top-5);
-    spot.style.left=x+"px"; spot.style.top=y+"px";
-    spot.style.width=(rect.width+10)+"px"; spot.style.height=(rect.height+10)+"px";
-    document.getElementById("tourTitle").textContent=title;
-    document.getElementById("tourText").textContent=description;
-    document.getElementById("tourProgress").textContent="Qadam "+(index+1)+" / "+TOUR_STEPS.length;
-    document.getElementById("tourNext").textContent=index===TOUR_STEPS.length-1?"Tushunarli ✓":"Davom etish →";
-    const tipHeight=tip.offsetHeight||210;
-    const below=rect.bottom+18+tipHeight<window.innerHeight;
-    tip.style.top=Math.max(8,Math.min(window.innerHeight-tipHeight-8,below?rect.bottom+18:rect.top-tipHeight-18))+"px";
-    tip.style.left=Math.max(12,Math.min(window.innerWidth-tip.offsetWidth-12,rect.left))+"px";
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const x = Math.max(0, rect.left - 5), y = Math.max(0, rect.top - 5);
+    const right = Math.min(vw, rect.right + 5), bottom = Math.min(vh, rect.bottom + 5);
+    spot.style.left = x + "px"; spot.style.top = y + "px";
+    spot.style.width = (right - x) + "px"; spot.style.height = (bottom - y) + "px";
+    const positions = {
+      "top": [0, 0, vw, y],
+      "left": [0, y, x, bottom-y],
+      "right": [right, y, vw-right, bottom-y],
+      "bottom": [0, bottom, vw, vh-bottom]
+    };
+    Object.entries(positions).forEach(([name, values]) => {
+      const el = layer.querySelector(".tour-blur-" + name);
+      if (!el) return;
+      el.style.left = values[0] + "px"; el.style.top = values[1] + "px";
+      el.style.width = Math.max(0,values[2]) + "px"; el.style.height = Math.max(0,values[3]) + "px";
+    });
+    document.getElementById("tourTitle").textContent = title;
+    document.getElementById("tourText").textContent = description;
+    document.getElementById("tourNext").textContent = index === TOUR_STEPS.length - 1 ? "Tushunarli ✓" : "Keyingisi →";
+    const tipHeight = tip.offsetHeight || 160;
+    const below = bottom + 24 + tipHeight < vh;
+    const preferredTop = below ? bottom + 22 : y - tipHeight - 22;
+    tip.style.top = Math.max(12,Math.min(vh-tipHeight-12,preferredTop)) + "px";
+    tip.style.left = Math.max(12,Math.min(vw-tip.offsetWidth-12,x)) + "px";
   };
   const start=()=>{ index=0; layer.classList.remove("hidden");layer.setAttribute("aria-hidden","false");requestAnimationFrame(show); };
   document.getElementById("tourNext").onclick=()=>{ if (++index>=TOUR_STEPS.length) close(); else show(); };
-  document.getElementById("tourSkip").onclick=close;
+
   document.getElementById("restartTour")?.addEventListener("click",()=>{document.getElementById("settingsClose")?.click();start();});
   window.addEventListener("resize",()=>{if(!layer.classList.contains("hidden"))show();});
   if (readStorage("im-tour-v1")!=="done") setTimeout(start,900);

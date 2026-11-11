@@ -611,6 +611,7 @@ function renderSearch() {
 
   $("resultCount").textContent = filtered.length + " ta";
   renderCards("searchResults", filtered);
+  renderMapListings(filtered);
 }
 
 function renderSaved() {
@@ -738,7 +739,9 @@ async function submitListing(event) {
     phone: $("addPhone").value.trim(),
     address: $("addAddress").value.trim(),
     description: $("addDescription").value.trim(),
-    owner: clientId
+    owner: clientId,
+    latitude: selectedLocation?.lat ?? "",
+    longitude: selectedLocation?.lng ?? ""
   };
 
   Object.entries(fields).forEach(([key, value]) => {
@@ -1357,3 +1360,79 @@ document.addEventListener("DOMContentLoaded", () => {
     initPickers();
   }
 })();
+/* Optional maps: only listings with user-supplied coordinates are pinned. */
+let selectedLocation = null;
+let addMap, addMarker, searchMap, searchMarkers;
+function mapReady() { return typeof L !== "undefined"; }
+function makeMap(id) {
+  const map = L.map(id).setView([41.55, 60.62], 9);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  return map;
+}
+function setSelectedLocation(lat, lng) {
+  selectedLocation = {lat, lng};
+  if (!addMarker) addMarker = L.marker([lat,lng]).addTo(addMap);
+  else addMarker.setLatLng([lat,lng]);
+  addMap.setView([lat,lng], Math.max(addMap.getZoom(), 14));
+  $("locationStatus").textContent = "📍 Tanlangan nuqta: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+}
+function renderMapListings(items) {
+  if (!searchMap || !searchMarkers) return;
+  searchMarkers.clearLayers();
+  const bounds = [];
+  items.forEach(item => {
+    const lat = Number(item.latitude), lng = Number(item.longitude);
+    if (item.latitude == null || item.longitude == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const marker = L.marker([lat,lng]).addTo(searchMarkers);
+    const title = document.createElement("div");
+    title.textContent = (item.type || "Uy") + " · " + money(item.price) + " so'm/oy";
+    marker.bindPopup(title);
+    marker.on("click", () => showDetail(item));
+    bounds.push([lat,lng]);
+  });
+  if (bounds.length) searchMap.fitBounds(bounds, {padding:[25,25],maxZoom:13});
+}
+function initLocationMaps() {
+  $("pickLocation").onclick = () => {
+    if (!mapReady()) return toast("Xarita yuklanmadi. Internetni tekshiring.");
+    $("addMapWrap").classList.remove("hidden");
+    if (!addMap) {
+      addMap = makeMap("addMap");
+      addMap.on("click", e => setSelectedLocation(e.latlng.lat,e.latlng.lng));
+    }
+    setTimeout(() => addMap.invalidateSize(), 50);
+  };
+  $("useMyLocation").onclick = () => {
+    if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
+    if (!mapReady()) return toast("Xarita yuklanmadi");
+    navigator.geolocation.getCurrentPosition(pos => {
+      $("pickLocation").click();
+      setSelectedLocation(pos.coords.latitude,pos.coords.longitude);
+    }, () => toast("GPS ruxsati berilmadi yoki joylashuv topilmadi"), {enableHighAccuracy:false,timeout:12000});
+  };
+  $("clearLocation").onclick = () => {
+    selectedLocation = null;
+    if (addMarker && addMap) {addMap.removeLayer(addMarker);addMarker=null;}
+    $("locationStatus").textContent = "Joylashuv belgilanmagan";
+  };
+  $("toggleMap").onclick = () => {
+    if (!mapReady()) return toast("Xarita yuklanmadi. Internetni tekshiring.");
+    const wrap = $("searchMapWrap");
+    wrap.classList.toggle("hidden");
+    if (!wrap.classList.contains("hidden")) {
+      if (!searchMap) {searchMap=makeMap("searchMap");searchMarkers=L.layerGroup().addTo(searchMap);}
+      setTimeout(() => {searchMap.invalidateSize();renderSearch();},50);
+    }
+  };
+  $("nearMe").onclick = () => {
+    if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
+    navigator.geolocation.getCurrentPosition(pos => {
+      $("toggleMap").click();
+      if (searchMap) searchMap.setView([pos.coords.latitude,pos.coords.longitude],12);
+    }, () => toast("GPS ruxsati berilmadi"),{timeout:12000});
+  };
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",initLocationMaps);
+else initLocationMaps();

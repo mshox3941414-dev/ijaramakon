@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=20261111-smsfix">
-  <script src="./app.js?v=20261111-smsfix" defer></script>
+  <link rel="stylesheet" href="./style.css?v=20261111-telegramauth">
+  <script src="./app.js?v=20261111-telegramauth" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 </head>
@@ -181,6 +181,11 @@
         <h1>👤 Mening profilim</h1>
         <p>Ma'lumotlaringiz va e'lonlaringiz</p>
       </div>
+      <div class="panel phone-login-profile">
+        <p id="phoneLoginStatus">Mehmon sifatida ko'rish mumkin. Uy egasi bilan bog'lanish uchun Telegram orqali kiring.</p>
+        <button type="button" id="openPhoneLogin" class="primary-btn">📱 Telegram orqali kirish</button>
+        <button type="button" id="phoneLogout" class="secondary-btn">Chiqish</button>
+      </div>
       <form id="profileForm" class="panel">
         <div class="field">
           <label for="profileName">Ismingiz</label>
@@ -234,6 +239,21 @@
     </section>
   </main>
 
+  <div id="phoneLoginModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Telegram orqali kirish">
+    <div class="modal-box phone-login-box">
+      <button id="closePhoneLogin" type="button" class="close-btn" aria-label="Yopish">✕</button>
+      <h2>📱 Telegram orqali kirish</h2>
+      <p>Uylarni bemalol ko'rishingiz mumkin. Uy egasiga qo'ng'iroq qilish yoki SMS yozish uchun telefon raqamingizni tasdiqlang.</p>
+      <div class="field"><label for="phoneLoginPhone">Telefon raqamingiz (+998)</label><input id="phoneLoginPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998901234567"></div>
+      <button id="phoneLoginStart" type="button" class="primary-btn">Telegramda tasdiqlash</button>
+      <div id="phoneLoginStep2" class="hidden">
+        <p>Telegram botda <strong>o'zingizning raqamingizni ulashing</strong>, keyin bot yuborgan 6 raqamli kodni shu yerga kiriting.</p>
+        <a id="phoneLoginBot" class="secondary-btn" target="_blank" rel="noopener noreferrer" href="https://t.me/IjaraMakonBot">🤖 Telegram botni ochish</a>
+        <div class="field"><label for="phoneLoginCode">6 raqamli kod</label><input id="phoneLoginCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
+        <button id="phoneLoginVerify" type="button" class="primary-btn">Kirishni tasdiqlash</button>
+      </div>
+    </div>
+  </div>
   <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="E'lon ma'lumotlari">
     <div class="modal-box">
       <button id="closeDetail" class="close-btn" aria-label="Yopish">✕</button>

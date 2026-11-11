@@ -512,6 +512,7 @@ function createCard(item, admin = false) {
       <div class="listing-price">
         ${money(item.price)} so'm/oy
       </div>
+      <div class="listing-views">${listingIcon("eye")} <span data-view-count="${item.id}">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</div>
       <span class="status ${escapeHTML(item.status)}">
         ${statusLabel(item.status)}
       </span>
@@ -640,7 +641,7 @@ function renderProfileListings() {
   );
 }
 
-function showDetail(item) {
+async function showDetail(item) {
   const content = $("detailContent");
   content.replaceChildren();
 
@@ -658,6 +659,7 @@ function showDetail(item) {
     <div class="listing-price">
       ${money(item.price)} so'm/oy
     </div>
+    <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</p>
     <p><b>Hudud:</b> ${escapeHTML(item.district)}</p>
     <p><b>Mahalla:</b> ${escapeHTML(item.mahalla)}</p>
     <p><b>Manzil:</b> ${escapeHTML(item.address)}</p>
@@ -682,6 +684,22 @@ function showDetail(item) {
   $("detailModal").classList.remove("hidden");
   document.body.style.overflow = "hidden";
   $("closeDetail").focus();
+  if (item.status === "approved") {
+    try {
+      // One count per listing per browser tab session; no personal identifiers sent.
+      const key = "im-viewed-" + item.id;
+      if (!sessionStorage.getItem(key)) {
+        const result = await api("/api/listings/" + encodeURIComponent(item.id) + "/view", {method:"POST"});
+        sessionStorage.setItem(key, "1");
+        item.view_count = result.view_count;
+        const counter = $("detailViewCount");
+        if (counter) counter.textContent = Number(result.view_count).toLocaleString("uz-UZ");
+        document.querySelectorAll('[data-view-count="' + item.id + '"]').forEach(el => {
+          el.textContent = Number(result.view_count).toLocaleString("uz-UZ");
+        });
+      }
+    } catch (error) { console.warn("View counter unavailable", error); }
+  }
 }
 
 async function loadListings() {

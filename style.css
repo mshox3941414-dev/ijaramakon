@@ -430,3 +430,11 @@ body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;lette
 .photo-placeholder{background:linear-gradient(145deg,#eaf2ff,#f7faff)}
 .photo-placeholder .listing-icon{width:58px;height:58px;color:#88b0df;stroke-width:1.25;margin:0}
 @media(max-width:600px){.listing-body p .listing-icon{width:12px;height:12px}.photo-placeholder .listing-icon{width:43px;height:43px}}
+
+/* Optional GPS and map controls */
+.map-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.map-panel{background:white;border:1px solid var(--border);border-radius:18px;padding:10px;margin:12px 0 20px;overflow:hidden}
+.map-canvas{height:350px;width:100%;border-radius:12px;z-index:1}
+.map-help{font-size:12px;color:var(--muted);line-height:1.6;margin:8px 0}
+.map-field{margin-top:20px}
+@media(max-width:600px){.map-canvas{height:290px}.map-toolbar button{flex:1;font-size:12px;padding:10px}}

@@ -554,9 +554,9 @@ function createCard(item, admin = false) {
       </span>
 
       <div class="listing-actions">
-        <button class="primary-btn view-btn">Batafsil</button>
+        <button class="primary-btn view-btn"><span>Batafsil</span><svg class="premium-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
         ${!admin ? `
-          <button class="secondary-btn report-btn">${listingFlagIcon} Shikoyat</button>
+          <button class="secondary-btn report-btn">${listingFlagIcon} <span>Shikoyat</span></button>
         ` : ""}
       </div>
 
@@ -702,7 +702,7 @@ async function showDetail(item) {
       <div class="detail-main-price">${money(item.price)} so'm <span>/ oy</span></div>
       <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${(Number(item.view_count || 0) * 10).toLocaleString("uz-UZ")}</span> faollik balli</p>
       <div class="detail-contact">
-        <button type="button" class="primary-btn detail-contact-action" data-action="call">📞 Qo'ng'iroq qilish</button>
+        <button type="button" class="primary-btn detail-contact-action" data-action="call"><svg class="premium-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.2 3.5 5.4 2.7a2 2 0 0 0-2.3 1.1c-1.1 2.6-.2 6.8 3.8 10.8s8.2 4.9 10.8 3.8a2 2 0 0 0 1.1-2.3l-.8-2.8a2 2 0 0 0-2.2-1.4l-2.8.5a14 14 0 0 1-5.4-5.4l.5-2.8a2 2 0 0 0-1.9-2.7Z"/></svg> Qo'ng'iroq qilish</button>
         <button type="button" class="detail-sms-btn detail-contact-action" data-action="sms">✉ SMS yozish</button>
         <span class="detail-phone" id="verifiedContactPhone">${escapeHTML(item.phone || "")}</span>
       </div>

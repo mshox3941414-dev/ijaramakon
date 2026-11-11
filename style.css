@@ -652,14 +652,18 @@ body.phone-login-open{overflow:hidden}
 /* Support link and first-visit guided tour */
 .support-phone{display:block;margin:12px 0;font-weight:700;color:var(--blue,#2563eb);font-size:17px;text-decoration:none}
 .tour-restart{display:block;width:100%;padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;background:transparent;color:inherit;cursor:pointer}
-.tour-layer{position:fixed;inset:0;z-index:100000;pointer-events:auto}
+.tour-layer{position:fixed;inset:0;z-index:100000;pointer-events:auto;font-family:inherit}
 .tour-layer.hidden{display:none}
-.tour-spot{position:fixed;border:3px solid #fff;border-radius:13px;box-shadow:0 0 0 9999px rgba(7,19,36,.73);pointer-events:none;z-index:1}
-.tour-tip{position:fixed;z-index:2;box-sizing:border-box;width:min(340px,calc(100vw - 16px));padding:18px;background:#fff;color:#17233a;border-radius:15px;box-shadow:0 12px 36px #0005;line-height:1.5}
-.tour-tip strong{font-size:18px}
-.tour-tip p{margin:9px 0 15px;font-size:14px}
-.tour-progress{color:#64748b;font-size:12px;margin-bottom:7px}
-.tour-actions{display:flex;justify-content:space-between;gap:10px}
-.tour-actions button{padding:10px 13px;border:0;border-radius:9px;cursor:pointer}
-#tourSkip{background:#e9edf3;color:#334155}
-#tourNext{background:#2563eb;color:white;font-weight:700}
+.tour-spot{position:fixed;border:2px solid #3b82f6;border-radius:15px;box-shadow:0 0 0 9999px rgba(16,35,59,.46),0 0 0 5px rgba(96,165,250,.22);pointer-events:none;z-index:1;transition:left .22s ease,top .22s ease,width .22s ease,height .22s ease}
+.tour-tip{position:fixed;z-index:2;box-sizing:border-box;width:min(350px,calc(100vw - 24px));padding:20px 20px 17px;background:#fff;color:#172b45;border:1px solid #e5ecf5;border-radius:20px;box-shadow:0 18px 55px rgba(12,32,62,.22);line-height:1.55;transition:top .2s ease,left .2s ease}
+.tour-tip:before{content:"💡 Sayt bo‘ylab yo‘riqnoma";display:block;color:#3976c9;background:#eff6ff;border-radius:100px;padding:5px 11px;width:max-content;max-width:100%;font-size:11px;font-weight:700;letter-spacing:.1px;margin-bottom:13px}
+.tour-tip strong{display:block;font-size:19px;letter-spacing:-.3px;line-height:1.3}
+.tour-tip p{margin:9px 0 18px;font-size:14px;color:#53647a;line-height:1.6}
+.tour-progress{color:#718198;font-size:12px;margin-bottom:8px;font-weight:600}
+.tour-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #edf1f6;padding-top:14px}
+.tour-actions button{min-height:43px;padding:10px 15px;border:0;border-radius:11px;cursor:pointer;font-size:13px;font-weight:650}
+#tourSkip{background:transparent;color:#66788f}
+#tourNext{background:#2563eb;color:white;box-shadow:0 3px 10px rgba(37,99,235,.18)}
+#tourNext:focus-visible,#tourSkip:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+@media(max-width:600px){.tour-tip{padding:17px 17px 15px;border-radius:17px}.tour-tip strong{font-size:17px}.tour-tip p{font-size:13px;margin-bottom:13px}.tour-actions button{min-height:42px}}
+@media(prefers-reduced-motion:reduce){.tour-spot,.tour-tip{transition:none}}

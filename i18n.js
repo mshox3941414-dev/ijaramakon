@@ -58,17 +58,54 @@ IJARA_TRANSLATIONS["Kvartira qavati *"]={ru:"Этаж квартиры *",en:"Ap
 IJARA_TRANSLATIONS["Barcha qavatlar"]={ru:"Все этажи",en:"All floors"};
 IJARA_TRANSLATIONS["Qavatni tanlang"]={ru:"Выберите этаж",en:"Select floor"};
 IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
+IJARA_TRANSLATIONS["Uy turini tanlang"]={ru:"Выберите тип жилья",en:"Select property type"};
+IJARA_TRANSLATIONS["Yer uchastkali uy"]={ru:"Дом с земельным участком",en:"House with land"};
+IJARA_TRANSLATIONS["Ko'p qavatli uydagi kvartira"]={ru:"Квартира в многоэтажном доме",en:"Apartment in a multi-storey building"};
+IJARA_TRANSLATIONS["O'rtacha ta'mir"]={ru:"Средний ремонт",en:"Average renovation"};
+IJARA_TRANSLATIONS["Yevro remont"]={ru:"Евроремонт",en:"Euro renovation"};
+IJARA_TRANSLATIONS["Ta'mirsiz"]={ru:"Без ремонта",en:"Unrenovated"};
+IJARA_TRANSLATIONS["Barcha uy turlari"]={ru:"Все типы жилья",en:"All property types"};
+IJARA_TRANSLATIONS["Barcha hududlar"]={ru:"Все районы",en:"All areas"};
+IJARA_TRANSLATIONS["Barcha mahallalar"]={ru:"Все махалли",en:"All neighborhoods"};
+IJARA_TRANSLATIONS["Barcha xonalar"]={ru:"Все комнаты",en:"All room counts"};
+IJARA_TRANSLATIONS["Barcha ta'mir turlari"]={ru:"Любое состояние",en:"All conditions"};
+IJARA_TRANSLATIONS["Tumanni tanlang"]={ru:"Выберите район",en:"Select district"};
+IJARA_TRANSLATIONS["Mahallani tanlang"]={ru:"Выберите махаллю",en:"Select neighborhood"};
+IJARA_TRANSLATIONS["Ta'mir holati"]={ru:"Состояние ремонта",en:"Condition"};
+IJARA_TRANSLATIONS["Xonalar soni"]={ru:"Количество комнат",en:"Rooms"};
+IJARA_TRANSLATIONS["Qidirish..."]={ru:"Поиск...",en:"Search..."};
+IJARA_TRANSLATIONS["Ro'yxatdan qidirish"]={ru:"Поиск по списку",en:"Search options"};
+IJARA_TRANSLATIONS["Ma’lumot topilmadi"]={ru:"Ничего не найдено",en:"No results found"};
+IJARA_TRANSLATIONS["Yopish"]={ru:"Закрыть",en:"Close"};
+IJARA_TRANSLATIONS["Uy sharoitlari haqida yozing"]={ru:"Опишите условия жилья",en:"Describe the property"};
+IJARA_TRANSLATIONS["Ko'cha, mo'ljal"]={ru:"Улица, ориентир",en:"Street, landmark"};
+IJARA_TRANSLATIONS["Rasm tanlash"]={ru:"Выбрать фото",en:"Choose photos"};
+IJARA_TRANSLATIONS["Расм танлаш"]={ru:"Выбрать фото",en:"Choose photos"};
+IJARA_TRANSLATIONS["Расм танланмаган"]={ru:"Фото не выбрано",en:"No photos selected"};
+IJARA_TRANSLATIONS["📤 E'lonni yuborish"]={ru:"Отправить объявление",en:"Submit listing"};
+IJARA_TRANSLATIONS["📍 Uy joylashuvi (ixtiyoriy)"]={ru:"Местоположение жилья (необязательно)",en:"Property location (optional)"};
+IJARA_TRANSLATIONS["Uy joylashuvini ko‘rsatish majburiy emas. “Xaritani ochish” tugmasini bosing va xaritada uy yaqinidagi joyni tanlang. “Joyimni aniqlash” telefoningizning hozirgi joylashuvini oladi. Aniq uy manzilini belgilash shart emas."]={ru:"Указывать местоположение необязательно. Откройте карту и выберите точку рядом с жильём. Определение местоположения использует геолокацию телефона. Точный адрес отмечать не обязательно.",en:"Adding a location is optional. Open the map and select a point near the property. Find my location uses your phone location. The exact home address is not required."};
+IJARA_TRANSLATIONS["Joylashuv belgilanmagan"]={ru:"Местоположение не указано",en:"Location not set"};
+IJARA_TRANSLATIONS["Kvartira qavati"]={ru:"Этаж квартиры",en:"Apartment floor"};
+IJARA_TRANSLATIONS["Kvartira qavati *"]={ru:"Этаж квартиры *",en:"Apartment floor *"};
+IJARA_TRANSLATIONS["Barcha qavatlar"]={ru:"Все этажи",en:"All floors"};
+IJARA_TRANSLATIONS["Qavatni tanlang"]={ru:"Выберите этаж",en:"Select floor"};
+IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
+IJARA_TRANSLATIONS["Batafsil"]={ru:"Подробнее",en:"Details"};
 (function(){
  const KEY="im-ui-language";
  let language="uz";
  try { language=localStorage.getItem(KEY)||"uz"; } catch(_){}
  if(!["uz","ru","en"].includes(language))language="uz";
  const originals=new WeakMap();
- const ignored="script,style,textarea,input,[contenteditable]";
+ const ignored="script,style,textarea,input,[contenteditable],.detail-description,.listing-description,.detail-location-name";
+ window.ijaraTranslate=(text,lang=language)=>IJARA_TRANSLATIONS[String(text||"").trim()]?.[lang]||String(text||"");
+ window.ijaraLanguage=()=>language;
  let busy=false;
  function translateText(node){
   const parent=node.parentElement;
   if(!parent||parent.closest(ignored))return;
+  if(parent.closest("option") && parent.closest("select")?.id==="siteLanguage")return;
   const text=node.nodeValue;
   if(!text||!text.trim())return;
   let original=originals.get(node);
@@ -86,6 +123,21 @@ IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
   if(!value)return text;
   return text.slice(0,text.indexOf(key))+value+text.slice(text.indexOf(key)+key.length);
  }
+ function translateAttributes(root){
+  if(!root || root.nodeType!==1)return;
+  const elements=[root,...root.querySelectorAll("[placeholder],[aria-label],[title]")];
+  for(const el of elements){
+   if(el.closest(".listing-detail-layout") && el.matches("input,textarea"))continue;
+   for(const attr of ["placeholder","aria-label","title"]){
+    if(!el.hasAttribute(attr))continue;
+    const key="imOriginal"+attr.replace("-","");
+    let original=el.dataset[key];
+    if(!original){original=el.getAttribute(attr);el.dataset[key]=original;}
+    const translatedValue=window.ijaraTranslate(original,language);
+    if(el.getAttribute(attr)!==translatedValue)el.setAttribute(attr,translatedValue);
+   }
+  }
+ }
  function apply(root=document.body){
   if(busy||!root)return;
   busy=true;
@@ -95,6 +147,7 @@ IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
     let node;while((node=walker.nextNode()))translateText(node);
    }
+   translateAttributes(root.nodeType===1?root:root.parentElement);
    document.documentElement.lang=language;
   }finally{busy=false;}
  }
@@ -114,6 +167,7 @@ IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
   try{localStorage.setItem(KEY,lang);}catch(_){}
   apply();
   updateFlag();
+  document.dispatchEvent(new CustomEvent("ijara:languagechange",{detail:{language}}));
  }
  document.addEventListener("DOMContentLoaded",()=>{
   const select=document.getElementById("siteLanguage");

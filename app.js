@@ -501,6 +501,7 @@ function createCard(item, admin = false) {
 
   card.innerHTML = `
     ${photo}
+    ${!admin ? `<button type="button" class="save-btn heart-save ${saved ? "is-saved" : ""}" aria-label="${saved ? "Saqlanganlardan olib tashlash" : "Saqlanganlarga qo'shish"}" aria-pressed="${saved}" title="${saved ? "Saqlangan" : "Saqlash"}">${listingIcon("heart")}</button>` : ""}
     <div class="listing-body">
       <h3>${escapeHTML(item.type)}</h3>
       <p>
@@ -523,9 +524,6 @@ function createCard(item, admin = false) {
         <button class="primary-btn view-btn">Batafsil</button>
         ${!admin ? `
           <button class="secondary-btn report-btn">Shikoyat</button>
-          <button class="secondary-btn save-btn">
-            ${listingIcon("heart")} ${saved ? "Saqlangan" : "Saqlash"}
-          </button>
         ` : ""}
       </div>
 

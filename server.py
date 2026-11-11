@@ -159,6 +159,7 @@ def initialize():
             expires_at INTEGER NOT NULL
         )""")
         db.execute("CREATE TABLE IF NOT EXISTS admin_security (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+        db.execute("CREATE TABLE IF NOT EXISTS admin_moderators (username TEXT PRIMARY KEY, password_hash TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL)")
         db.commit()
 
 
@@ -188,6 +189,11 @@ def admin_role():
             return "admin"
     elif ADMIN_PASSWORD and hmac.compare_digest(supplied, ADMIN_PASSWORD):
         return "admin"
+    moderator_name = request.headers.get("X-Moderator-Username", "").strip().lower()
+    if moderator_name and supplied:
+        matches = rows("SELECT password_hash, active FROM admin_moderators WHERE username = ?", (moderator_name,))
+        if matches and matches[0]["active"] and check_password_hash(matches[0]["password_hash"], supplied):
+            return "moderator"
     if MODERATOR_PASSWORD and hmac.compare_digest(supplied, MODERATOR_PASSWORD):
         return "moderator"
     return None
@@ -198,8 +204,9 @@ def is_admin():
 
 
 def log_admin(db, action, listing_id=None, detail=""):
+    actor = request.headers.get("X-Moderator-Username", "").strip().lower() if admin_role() == "moderator" else "admin"
     db.execute("INSERT INTO admin_audit (actor, action, listing_id, detail, created_at) VALUES (?, ?, ?, ?, ?)",
-               (admin_role() or "system", action, listing_id, detail, datetime.now(timezone.utc).isoformat()))
+               (actor or "moderator", action, listing_id, detail, datetime.now(timezone.utc).isoformat()))
 
 
 def error(message, status=400):
@@ -781,6 +788,135 @@ def set_security(db, key, value):
     db.execute("DELETE FROM admin_security WHERE key = ?", (key,))
     db.execute("INSERT INTO admin_security (key, value) VALUES (?, ?)", (key, value))
 
+
+
+@app.get("/api/admin/statistics")
+def admin_statistics():
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    data = rows("SELECT district, mahalla, status, COALESCE(view_count,0) AS views FROM houses")
+    districts, neighborhoods = {}, {}
+    for item in data:
+        district = item["district"] or "Noma'lum"
+        mahalla = item["mahalla"] or "Noma'lum"
+        for target, key in ((districts, district), (neighborhoods, (district, mahalla))):
+            stat = target.setdefault(key, {"listings": 0, "views": 0, "approved": 0})
+            stat["listings"] += 1
+            stat["views"] += max(0, int(item["views"] or 0))
+            stat["approved"] += int(item["status"] == "approved")
+    return jsonify({
+        "districts": [{"district": name, **values} for name, values in sorted(districts.items())],
+        "mahallas": [{"district": key[0], "mahalla": key[1], **values} for key, values in sorted(neighborhoods.items())],
+        "total_listings": len(data), "total_views": sum(max(0,int(item["views"] or 0)) for item in data)
+    })
+
+
+@app.get("/api/admin/statistics.xlsx")
+def admin_statistics_excel():
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    from io import BytesIO
+    from openpyxl import Workbook
+    from openpyxl.chart import BarChart, Reference
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+    data = rows("SELECT district, mahalla, status, COALESCE(view_count,0) AS views FROM houses")
+    districts, mahallas = {}, {}
+    for item in data:
+        d, m = item["district"] or "Noma'lum", item["mahalla"] or "Noma'lum"
+        for target, key in ((districts,d),(mahallas,(d,m))):
+            stat = target.setdefault(key,[0,0,0])
+            stat[0] += 1
+            stat[1] += max(0,int(item["views"] or 0))
+            stat[2] += int(item["status"] == "approved")
+    wb = Workbook()
+    wb.remove(wb.active)
+    for title, headings, entries in (
+        ("Tumanlar", ["Tuman", "E'lonlar", "Haqiqiy ko'rishlar", "Tasdiqlangan"], [(k,*v) for k,v in sorted(districts.items())]),
+        ("Mahallalar", ["Tuman", "Mahalla", "E'lonlar", "Haqiqiy ko'rishlar", "Tasdiqlangan"], [(k[0],k[1],*v) for k,v in sorted(mahallas.items())])
+    ):
+        ws = wb.create_sheet(title)
+        ws.append(headings)
+        for entry in entries: ws.append(entry)
+        ws.freeze_panes = "A2"
+        ws.auto_filter.ref = ws.dimensions
+        for cell in ws[1]:
+            cell.fill = PatternFill("solid", fgColor="1458C5")
+            cell.font = Font(color="FFFFFF",bold=True)
+            cell.alignment = Alignment(horizontal="center")
+        for col in range(1,len(headings)+1):
+            ws.column_dimensions[get_column_letter(col)].width = 31 if col <= (2 if title=="Mahallalar" else 1) else 22
+        if entries:
+            start = 3 if title=="Mahallalar" else 2
+            for metric_col, chart_title, anchor in ((start,"E'lonlar soni","G2"),(start+1,"Haqiqiy ko'rishlar","G19")):
+                chart = BarChart()
+                chart.title = chart_title
+                chart.y_axis.title = "Soni"
+                chart.add_data(Reference(ws,min_col=metric_col,min_row=1,max_row=min(len(entries)+1,16)),titles_from_data=True)
+                chart.set_categories(Reference(ws,min_col=1,min_row=2,max_row=min(len(entries)+1,16)))
+                chart.width = 18
+                chart.height = 8
+                ws.add_chart(chart,anchor)
+    output = BytesIO()
+    wb.save(output)
+    return Response(output.getvalue(),mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",headers={"Content-Disposition":"attachment; filename=ijaramakon-statistika.xlsx","Cache-Control":"no-store"})
+
+
+@app.get("/api/admin/moderators")
+def admin_moderators():
+    if admin_role() != "admin":
+        return error("Faqat bosh admin",403)
+    return jsonify({"moderators":rows("SELECT username, active, created_at FROM admin_moderators ORDER BY username")})
+
+
+@app.post("/api/admin/moderators")
+def admin_moderator_create():
+    if admin_role() != "admin":
+        return error("Faqat bosh admin",403)
+    data = request.get_json(silent=True) or {}
+    username = str(data.get("username","")).strip().lower()
+    password = str(data.get("password",""))
+    if not re.fullmatch(r"[a-z0-9_]{3,32}",username) or not 12 <= len(password) <= 128:
+        return error("Login 3-32 lotin harf/raqam, parol kamida 12 belgi")
+    with db_lock, connect() as db:
+        if db.execute("SELECT username FROM admin_moderators WHERE username = ?",(username,)).fetchone():
+            return error("Bunday login mavjud",409)
+        db.execute("INSERT INTO admin_moderators (username,password_hash,active,created_at) VALUES (?,?,1,?)",
+                   (username,generate_password_hash(password),datetime.now(timezone.utc).isoformat()))
+        log_admin(db,"moderator_create",None,username)
+        db.commit()
+    return jsonify({"ok":True}),201
+
+
+@app.patch("/api/admin/moderators/<username>")
+def admin_moderator_update(username):
+    if admin_role() != "admin":
+        return error("Faqat bosh admin",403)
+    data = request.get_json(silent=True) or {}
+    if not re.fullmatch(r"[a-z0-9_]{3,32}",username):
+        return error("Login noto'g'ri")
+    changes = []
+    params = []
+    if "active" in data:
+        if type(data["active"]) is not bool:
+            return error("Holat noto'g'ri")
+        changes.append("active = ?")
+        params.append(int(data["active"]))
+    if "password" in data:
+        password = str(data["password"])
+        if not 12 <= len(password) <= 128:
+            return error("Parol kamida 12 belgi")
+        changes.append("password_hash = ?")
+        params.append(generate_password_hash(password))
+    if not changes:
+        return error("O'zgarish yo'q")
+    with db_lock, connect() as db:
+        cur = db.execute("UPDATE admin_moderators SET "+", ".join(changes)+" WHERE username = ?",(*params,username))
+        if cur.rowcount == 0:
+            return error("Moderator topilmadi",404)
+        log_admin(db,"moderator_update",None,username)
+        db.commit()
+    return jsonify({"ok":True})
 
 @app.post("/api/admin/password-reset/request")
 def request_admin_password_reset():

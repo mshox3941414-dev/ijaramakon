@@ -759,3 +759,8 @@ body:has(#detailModal:not(.hidden)) .top-utility-bar,
 body:has(#detailModal:not(.hidden)) .header,
 body:has(#detailModal:not(.hidden)) .main-nav{position:relative!important;z-index:0!important}
 body:has(#detailModal:not(.hidden)) #detailModal{z-index:100000!important}
+
+/* Premium monochrome vector icons for search and listing creation only */
+.premium-ui-icon{display:inline-block;width:18px;height:18px;vertical-align:-3px;flex-shrink:0;color:inherit;stroke:currentColor;fill:none}
+.page-title h1 .premium-ui-icon{width:27px;height:27px;vertical-align:-4px;margin-right:5px}
+.nav-btn .premium-ui-icon,.hero-primary .premium-ui-icon,.hero-secondary .premium-ui-icon,.primary-btn .premium-ui-icon{margin-right:5px}

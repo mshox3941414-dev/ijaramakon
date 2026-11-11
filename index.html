@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=20261111-icons24">
+  <link rel="stylesheet" href="./style.css?v=20261112-admin25">
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
   <script src="./app.js?v=20261111-visual22" defer></script><script src="./i18n.js?v=20261111-visual22" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
@@ -313,12 +313,18 @@ document.addEventListener("DOMContentLoaded", function initTelegramViewport() {
           <button id="adminRefresh" class="secondary-btn">🔄 Yangilash</button>
           <button id="adminLogout" class="secondary-btn">Chiqish</button>
         </div>
-        <div class="panel" id="adminStats" aria-live="polite"></div>
+        <div id="adminDashboard" class="admin-dashboard" aria-label="Admin boshqaruv markazi">
+          <div class="admin-dashboard-head"><div><h2>Boshqaruv markazi</h2><p>E'lonlar va murojaatlarning umumiy holati</p></div><span class="admin-dashboard-tag">IjaraMakon • Admin</span></div>
+          <div class="admin-metrics" id="adminStats" aria-live="polite"></div>
+          <nav class="admin-quicklinks" aria-label="Admin bo'limlari">
+            <a href="#admin-listings-section">E'lonlar <span>↗</span></a><a href="#admin-reports-section">Shikoyatlar <span>↗</span></a><a href="#admin-audit-section">Harakatlar tarixi <span>↗</span></a>
+          </nav>
+        </div>
         <div class="field"><label for="adminStatusFilter">Barcha e'lonlarni holati bo'yicha saralash</label>
           <select id="adminStatusFilter"><option value="">Barcha holatlar</option><option value="pending">Kutilmoqda</option><option value="approved">Tasdiqlangan</option><option value="rejected">Rad etilgan</option><option value="rented">Ijaraga berilgan</option></select></div>
-        <div class="section-heading"><h2>Shikoyatlar</h2></div><div id="adminReports" class="panel"></div><div class="section-heading"><h2>Admin harakatlari</h2></div><div id="adminAudit" class="panel"></div><div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>
+        <div class="section-heading" id="admin-reports-section"><h2>Shikoyatlar</h2></div><div id="adminReports" class="panel"></div><div class="section-heading" id="admin-audit-section"><h2>Admin harakatlari</h2></div><div id="adminAudit" class="panel"></div><div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>
         <div id="pendingListings" class="listing-grid"></div>
-        <div class="section-heading"><h2>Barcha e'lonlar</h2></div>
+        <div class="section-heading" id="admin-listings-section"><h2>Barcha e'lonlar</h2></div>
         <div id="adminListings" class="listing-grid"></div>
       </div>
     </section>

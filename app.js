@@ -1149,6 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   $("adminLoginButton").onclick = () => {
     adminPassword = $("adminPassword").value;
+    adminModeratorUsername = $("adminUsername").value.trim().toLowerCase();
     $("adminPassword").value = "";
 
     if (adminPassword) {
@@ -1167,6 +1168,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("adminRefresh").onclick = loadAdmin;
   $("adminStatusFilter").onchange = loadAdmin;
+  $("adminDistrictPick").onchange = renderAdminMahallas;
+  $("adminExcel").onclick = downloadAdminExcel;
+  $("createModerator").onclick = createModeratorAccount;
 
   $("adminLogout").onclick = () => {
     adminPassword = "";
@@ -1796,6 +1800,77 @@ async function loadAdminOverview() {
     row.textContent = item.created_at + " — " + item.actor + " — " + item.action + " #" + (item.listing_id ?? "");
     audit.appendChild(row);
   });
+}
+
+
+let adminAnalyticsData = null;
+function adminChart(targetId, items, key, labelKey) {
+  const root = $(targetId);
+  root.replaceChildren();
+  if (!items.length) { root.textContent = "Ma'lumot mavjud emas"; return; }
+  const sorted = [...items].sort((a,b) => b[key]-a[key]).slice(0,15);
+  const maximum = Math.max(1,...sorted.map(x=>Number(x[key])||0));
+  sorted.forEach(item=>{
+    const row=document.createElement("div");row.className="admin-bar-row";
+    const label=document.createElement("span");label.className="admin-bar-label";label.textContent=item[labelKey] || "Noma'lum";label.title=item[labelKey] || "";
+    const track=document.createElement("div");track.className="admin-bar-track";
+    const bar=document.createElement("div");bar.className="admin-bar-fill";bar.style.width=(100*(Number(item[key])||0)/maximum)+"%";
+    const number=document.createElement("strong");number.className="admin-bar-number";number.textContent=Number(item[key]||0).toLocaleString("uz-UZ");
+    track.appendChild(bar);row.append(label,track,number);root.appendChild(row);
+  });
+}
+function renderAdminMahallas() {
+  if(!adminAnalyticsData)return;
+  const district=$("adminDistrictPick").value;
+  const items=adminAnalyticsData.mahallas.filter(item=>!district||item.district===district);
+  adminChart("adminMahallaListingsChart",items,"listings","mahalla");
+  adminChart("adminMahallaViewsChart",items,"views","mahalla");
+}
+async function loadAdminAnalytics() {
+  try {
+    const data=await api("/api/admin/statistics",{headers:{"X-Admin-Password":adminPassword,"X-Moderator-Username":adminModeratorUsername}});
+    adminAnalyticsData=data;
+    $("adminAnalyticsSummary").textContent="Jami e'lonlar: "+data.total_listings.toLocaleString("uz-UZ")+"  •  Haqiqiy ko'rishlar: "+data.total_views.toLocaleString("uz-UZ");
+    adminChart("adminDistrictListingsChart",data.districts,"listings","district");
+    adminChart("adminDistrictViewsChart",data.districts,"views","district");
+    const picker=$("adminDistrictPick"), selected=picker.value;
+    picker.replaceChildren();
+    const all=document.createElement("option");all.value="";all.textContent="Barcha tumanlar";picker.appendChild(all);
+    data.districts.forEach(item=>{const option=document.createElement("option");option.value=item.district;option.textContent=item.district;picker.appendChild(option);});
+    picker.value=data.districts.some(x=>x.district===selected)?selected:"";
+    renderAdminMahallas();
+  }catch(err){$("adminAnalyticsSummary").textContent="Statistika yuklanmadi: "+err.message;}
+}
+async function downloadAdminExcel(){
+  try{
+    const response=await fetch(API_URL+"/api/admin/statistics.xlsx",{headers:{"X-Admin-Password":adminPassword,"X-Moderator-Username":adminModeratorUsername}});
+    if(!response.ok)throw new Error("Excel yuklab bo'lmadi ("+response.status+")");
+    const blob=await response.blob(),url=URL.createObjectURL(blob);
+    const link=document.createElement("a");link.href=url;link.download="ijaramakon-statistika.xlsx";
+    document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }catch(err){toast(err.message);}
+}
+async function loadModerators(){
+  const root=$("adminModeratorsList");root.replaceChildren();
+  try{
+    const data=await api("/api/admin/moderators",{headers:{"X-Admin-Password":adminPassword}});
+    if(!data.moderators.length){root.textContent="Hozircha moderatorlar yo'q";return;}
+    data.moderators.forEach(item=>{
+      const row=document.createElement("div");row.className="admin-moderator-row";
+      const name=document.createElement("strong");name.textContent=item.username;
+      const state=document.createElement("span");state.textContent=item.active?"Faol":"O'chirilgan";
+      const toggle=document.createElement("button");toggle.type="button";toggle.className="secondary-btn";toggle.textContent=item.active?"Ruxsatni yopish":"Ruxsat berish";
+      toggle.onclick=async()=>{if(!confirm(item.username+" uchun ruxsatni o'zgartirasizmi?"))return;try{await api("/api/admin/moderators/"+encodeURIComponent(item.username),{method:"PATCH",headers:{"Content-Type":"application/json","X-Admin-Password":adminPassword},body:JSON.stringify({active:!item.active})});await loadModerators();}catch(err){toast(err.message);}};
+      const reset=document.createElement("button");reset.type="button";reset.className="secondary-btn";reset.textContent="Parolni yangilash";
+      reset.onclick=async()=>{const password=prompt(item.username+" uchun yangi parol (kamida 12 belgi):");if(password===null)return;if(password.length<12){toast("Parol kamida 12 belgi");return;}try{await api("/api/admin/moderators/"+encodeURIComponent(item.username),{method:"PATCH",headers:{"Content-Type":"application/json","X-Admin-Password":adminPassword},body:JSON.stringify({password})});toast("Parol yangilandi");}catch(err){toast(err.message);}};
+      row.append(name,state,toggle,reset);root.appendChild(row);
+    });
+  }catch(err){root.textContent=err.message;}
+}
+async function createModeratorAccount(){
+  const username=$("newModeratorName").value.trim().toLowerCase(),password=$("newModeratorPassword").value;
+  if(!/^[a-z0-9_]{3,32}$/.test(username)||password.length<12){toast("Login 3-32 belgi, parol kamida 12 belgi");return;}
+  try{await api("/api/admin/moderators",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Password":adminPassword},body:JSON.stringify({username,password})});$("newModeratorName").value="";$("newModeratorPassword").value="";toast("Moderator qo'shildi");await loadModerators();}catch(err){toast(err.message);}
 }
 
 /* Appearance settings: three layouts + day/night/auto, stored locally. */

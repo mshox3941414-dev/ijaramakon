@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=15">
+  <link rel="stylesheet" href="./style.css?v=16">
   <script src="./app.js?v=20261111-map1" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
@@ -47,16 +47,21 @@
         </div>
         <div class="hero-art" aria-hidden="true"><div class="hero-arch"><div class="hero-sun"></div><div class="hero-tower tower-left"></div><div class="hero-tower tower-right"></div><div class="hero-dome"></div><div class="hero-door"></div></div><span class="hero-art-label">XIVA · XORAZM</span></div>
       </div>
-      <div class="trust-strip" aria-label="IjaraMakon qulayliklari">
-        <div class="trust-item"><span class="trust-symbol" aria-hidden="true">⌖</span><div><strong>Hudud bo'yicha qidiring</strong><small>Xorazmning 13 tuman va shahri</small></div></div>
-        <div class="trust-item"><span class="trust-symbol" aria-hidden="true">◇</span><div><strong>Tanlang va saqlang</strong><small>Yoqtirgan uylaringiz bir joyda</small></div></div>
-        <div class="trust-item"><span class="trust-symbol" aria-hidden="true">✓</span><div><strong>Tekshiriladigan e'lonlar</strong><small>Admin tasdig'idan keyin e'lon qilinadi</small></div></div>
+      <div class="quick-discovery">
+        <div class="quick-discovery-copy"><strong>Qayerdan uy qidiryapsiz?</strong><span>Hudud, mahalla va narx bo'yicha toping</span></div>
+        <button type="button" class="quick-discovery-btn" data-page="search">Uylarni qidirish <span aria-hidden="true">→</span></button>
       </div>
       <div class="section-heading">
         <h2>So'nggi e'lonlar</h2>
         <button class="text-btn" data-page="search">Barchasi →</button>
       </div>
       <div id="latestListings" class="listing-grid"></div>
+      <div class="trust-strip" aria-label="IjaraMakon qulayliklari">
+        <div class="trust-item"><span class="trust-symbol" aria-hidden="true">⌖</span><div><strong>Hudud bo'yicha qidiring</strong><small>Xorazmning 13 tuman va shahri</small></div></div>
+        <div class="trust-item"><span class="trust-symbol" aria-hidden="true">◇</span><div><strong>Tanlang va saqlang</strong><small>Yoqtirgan uylaringiz bir joyda</small></div></div>
+        <div class="trust-item"><span class="trust-symbol" aria-hidden="true">✓</span><div><strong>Tekshiriladigan e'lonlar</strong><small>Admin tasdig'idan keyin e'lon qilinadi</small></div></div>
+      </div>
+
     </section>
 
     <section id="search" class="page">

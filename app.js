@@ -383,6 +383,25 @@ function updateMahalla(prefix) {
   $(prefix + "Mahalla").disabled = !district;
 }
 
+const isApartment = type => ["kvartira", "ko'p qavatli uydagi kvartira"].includes(String(type || "").toLowerCase());
+const formatListingDate = value => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("uz-UZ", {day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Asia/Tashkent"}).format(date);
+};
+const listingCalendarIcon = '<svg class="premium-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg>';
+const listingFlagIcon = '<svg class="premium-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4m0 1c3-3 6 2 9 0s5-1 5-1v11c-3 0-5-1-8 1s-4-2-6 0"/></svg>';
+function updateFloorVisibility(prefix) {
+  const selected = isApartment($(prefix+"Type").value);
+  const wrapper = $(prefix+"FloorField"), floor = $(prefix+"Floor");
+  if (!wrapper || !floor) return;
+  wrapper.classList.toggle("hidden", !selected);
+  floor.disabled = !selected;
+  floor.required = prefix === "add" && selected;
+  if (!selected) floor.value = "";
+}
+
 function setupFilters() {
   ["search", "add"].forEach(prefix => {
     populate(
@@ -414,6 +433,18 @@ function setupFilters() {
       () => updateMahalla(prefix)
     );
 
+    const floor = $(prefix + "Floor");
+    for (let n=1;n<=50;n++) {
+      const option=document.createElement("option");
+      option.value=String(n);
+      option.textContent=n+"-qavat";
+      floor.appendChild(option);
+    }
+    $(prefix+"Type").addEventListener("change", () => {
+      updateFloorVisibility(prefix);
+      if (prefix==="search") renderSearch();
+    });
+    updateFloorVisibility(prefix);
     updateMahalla(prefix);
   });
 }
@@ -523,7 +554,7 @@ function createCard(item, admin = false) {
       <div class="listing-actions">
         <button class="primary-btn view-btn">Batafsil</button>
         ${!admin ? `
-          <button class="secondary-btn report-btn">Shikoyat</button>
+          <button class="secondary-btn report-btn">${listingFlagIcon} Shikoyat</button>
         ` : ""}
       </div>
 
@@ -590,6 +621,7 @@ function renderSearch() {
   const type = $("searchType").value;
   const rooms = $("searchRooms").value;
   const repair = $("searchRepair").value;
+  const floor = $("searchFloor").value;
   const max = Number($("searchMaxPrice").value || 0);
 
   let filtered = listings.filter(item =>
@@ -606,6 +638,7 @@ function renderSearch() {
       )
     ) &&
     (!repair || item.repair === repair) &&
+    (!floor || (isApartment(item.type) && String(item.floor ?? "") === floor)) &&
     (!max || Number(item.price) <= max)
   );
 
@@ -675,10 +708,12 @@ async function showDetail(item) {
       <dl class="detail-facts">
         <div><dt>Uy turi</dt><dd>${escapeHTML(item.type)}</dd></div>
         <div><dt>Xonalar soni</dt><dd>${escapeHTML(item.rooms)}</dd></div>
+        ${isApartment(item.type) && item.floor ? `<div><dt>Kvartira qavati</dt><dd>${escapeHTML(item.floor)}-qavat</dd></div>` : ""}
         <div><dt>Ta'mir holati</dt><dd>${escapeHTML(item.repair)}</dd></div>
         <div><dt>Manzil</dt><dd>${escapeHTML(item.address)}</dd></div>
       </dl>
       ${item.description ? `<p class="detail-description">${escapeHTML(item.description)}</p>` : ""}
+      ${formatListingDate(item.created_at) ? `<p class="detail-posted-date">${listingCalendarIcon} ${escapeHTML(formatListingDate(item.created_at))}</p>` : ""}
       <h3>Joylashuv</h3>
       <p class="detail-location-name">${listingIcon("pin")} ${escapeHTML(locationName)}</p>
       ${hasCoordinates ? '<div id="detailLocationMap" class="detail-location-map" role="region" aria-label="Uy joylashuvi xaritasi"></div>' : '<div class="detail-location-empty">Bu e\'lon uchun xaritada aniq joylashuv belgilanmagan.</div>'}
@@ -816,6 +851,7 @@ async function submitListing(event) {
     type: $("addType").value,
     rooms: $("addRooms").value,
     repair: $("addRepair").value,
+    floor: isApartment($("addType").value) ? $("addFloor").value : "",
     price: $("addPrice").value,
     phone: $("addPhone").value.trim(),
     address: $("addAddress").value.trim(),
@@ -1045,12 +1081,14 @@ document.addEventListener("DOMContentLoaded", () => {
       "searchType",
       "searchRooms",
       "searchRepair",
+      "searchFloor",
       "searchMaxPrice"
     ].forEach(id => {
       $(id).value = "";
     });
 
     updateMahalla("search");
+    updateFloorVisibility("search");
     renderSearch();
   };
 

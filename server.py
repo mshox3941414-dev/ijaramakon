@@ -435,3 +435,79 @@ def admin_listing_action(listing_id, action):
         db.commit()
 
     return jsonify({"ok": True, "id": listing_id, "status": status_by_action[action]})
+
+
+@app.get("/api/admin/overview")
+def admin_overview():
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    items = rows("SELECT owner, status, created_at FROM houses")
+    counts = {status: sum(item["status"] == status for item in items)
+              for status in ("pending", "approved", "rejected", "rented")}
+    result = {"total": len(items), "users": len({item["owner"] for item in items if item["owner"]}),
+              "statuses": counts, "reports": rows("SELECT * FROM listing_reports ORDER BY id DESC")}
+    if admin_role() == "admin":
+        result["audit"] = rows("SELECT * FROM admin_audit ORDER BY id DESC LIMIT 100")
+    return jsonify(result)
+
+
+@app.post("/api/listings/<int:listing_id>/report")
+def report_listing(listing_id):
+    payload = request.get_json(silent=True) or {}
+    reason = clean(payload.get("reason"), 500)
+    if len(reason) < 10:
+        return error("Shikoyat sababini kamida 10 belgi bilan yozing")
+    with db_lock, connect() as db:
+        if not db.execute("SELECT id FROM houses WHERE id = ? AND status = 'approved'", (listing_id,)).fetchone():
+            return error("E'lon topilmadi", 404)
+        db.execute("INSERT INTO listing_reports (listing_id, reason, created_at) VALUES (?, ?, ?)",
+                   (listing_id, reason, datetime.now(timezone.utc).isoformat()))
+        db.commit()
+    return jsonify({"ok": True}), 201
+
+
+@app.post("/api/admin/reports/<int:report_id>/resolve")
+def resolve_report(report_id):
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    with db_lock, connect() as db:
+        cur = db.execute("UPDATE listing_reports SET status = 'resolved' WHERE id = ?", (report_id,))
+        if cur.rowcount == 0:
+            return error("Shikoyat topilmadi", 404)
+        log_admin(db, "resolve_report", None, str(report_id))
+        db.commit()
+    return jsonify({"ok": True})
+
+
+@app.patch("/api/admin/listings/<int:listing_id>")
+def edit_listing_admin(listing_id):
+    if admin_role() != "admin":
+        return error("Faqat bosh admin tahrirlay oladi", 403)
+    payload = request.get_json(silent=True) or {}
+    allowed = {"district": 100, "mahalla": 100, "type": 100, "rooms": 20,
+               "repair": 100, "phone": 20, "address": 200, "description": 2000}
+    changes = {}
+    for key, limit in allowed.items():
+        if key in payload:
+            value = clean(payload[key], limit)
+            if not value and key != "description":
+                return error(key + " bo'sh bo'lmasin")
+            changes[key] = value
+    if "price" in payload:
+        try:
+            price = int(payload["price"])
+            if not 0 < price <= 100000000000:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return error("Narx noto'g'ri")
+        changes["price"] = price
+    if not changes:
+        return error("O'zgartirish yo'q")
+    with db_lock, connect() as db:
+        sql = "UPDATE houses SET " + ", ".join(key + " = ?" for key in changes) + " WHERE id = ?"
+        cur = db.execute(sql, (*changes.values(), listing_id))
+        if cur.rowcount == 0:
+            return error("E'lon topilmadi", 404)
+        log_admin(db, "edit", listing_id, ", ".join(changes.keys()))
+        db.commit()
+    return jsonify({"ok": True})

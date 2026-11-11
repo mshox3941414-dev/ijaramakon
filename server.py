@@ -109,18 +109,15 @@ def initialize():
                 status TEXT DEFAULT 'pending', created_at TEXT NOT NULL
             )
         """)
-        # Nullable columns preserve all existing listings and bot writes.
-        for column in ("latitude", "longitude"):
-            try:
-                db.execute(f"ALTER TABLE houses ADD COLUMN {column} DOUBLE PRECISION")
-            except Exception as exc:
-                # PostgreSQL duplicate_column (42701); SQLite duplicate column.
-                if "already exists" not in str(exc).lower() and "duplicate column" not in str(exc).lower():
-                    if DATABASE_URL:
-                        db.db.rollback()
-                    raise
-                if DATABASE_URL:
-                    db.db.rollback()
+        # Idempotent migration: no destructive changes to existing listings.
+        if DATABASE_URL:
+            db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION")
+            db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION")
+        else:
+            existing = {row["name"] for row in db.execute("PRAGMA table_info(houses)").fetchall()}
+            for column in ("latitude", "longitude"):
+                if column not in existing:
+                    db.execute(f"ALTER TABLE houses ADD COLUMN {column} REAL")
         db.commit()
 
 

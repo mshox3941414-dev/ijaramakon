@@ -981,6 +981,19 @@ function setupGuidedTour() {
       el.style.left = values[0] + "px"; el.style.top = values[1] + "px";
       el.style.width = Math.max(0,values[2]) + "px"; el.style.height = Math.max(0,values[3]) + "px";
     });
+    // Fill the four square corners of the spotlight with blurred overlay,
+    // leaving an actually rounded clear window (not just a rounded border).
+    const radius = Math.min(22, (right-x)/2, (bottom-y)/2);
+    const corners = {
+      tl: [x, y], tr: [right-radius, y],
+      bl: [x, bottom-radius], br: [right-radius, bottom-radius]
+    };
+    Object.entries(corners).forEach(([name, coords]) => {
+      const el = layer.querySelector(".tour-corner-" + name);
+      if (!el) return;
+      el.style.left = coords[0] + "px"; el.style.top = coords[1] + "px";
+      el.style.width = radius + "px"; el.style.height = radius + "px";
+    });
     document.getElementById("tourTitle").textContent = title;
     document.getElementById("tourText").textContent = description;
     document.getElementById("tourNext").textContent = index === TOUR_STEPS.length - 1 ? "Tushunarli ✓" : "Keyingisi →";

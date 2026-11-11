@@ -5,6 +5,7 @@ import hashlib
 import secrets
 import json
 import urllib.request
+from urllib.parse import parse_qsl
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import psycopg
@@ -268,6 +269,54 @@ def auth_user():
         WHERE s.token_hash=? AND s.expires_at>?""",
         (hashlib.sha256(raw.encode()).hexdigest(), int(time.time())))
     return matches[0] if matches else None
+
+
+def verified_miniapp_user(raw):
+    """Authenticate only signed Telegram launch data, never initDataUnsafe."""
+    if not TOKEN or not isinstance(raw, str) or len(raw) > 16384:
+        return None
+    try:
+        pairs = parse_qsl(raw, keep_blank_values=True, strict_parsing=True)
+        data = dict(pairs)
+        if len(data) != len(pairs):
+            return None
+        supplied = data.pop("hash", "")
+        check = "\n".join(f"{key}={data[key]}" for key in sorted(data))
+        secret = hmac.new(b"WebAppData", TOKEN.encode(), hashlib.sha256).digest()
+        expected = hmac.new(secret, check.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected, supplied):
+            return None
+        age = int(time.time()) - int(data["auth_date"])
+        if age < -30 or age > 3600:
+            return None
+        user = json.loads(data["user"])
+        uid = user.get("id")
+        if type(uid) is not int or uid <= 0 or user.get("is_bot"):
+            return None
+        return str(uid)
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return None
+
+
+@app.post("/api/auth/telegram/miniapp")
+def telegram_miniapp_login():
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return error("So'rov noto'g'ri", 400)
+    uid = verified_miniapp_user(payload.get("init_data"))
+    if not uid:
+        return error("Telegram oynasini yopib, bot orqali qayta oching.", 401)
+    with db_lock, connect() as db:
+        user = db.execute("SELECT phone FROM telegram_auth_users WHERE telegram_id=?", (uid,)).fetchone()
+        if not user:
+            return jsonify({"authenticated": False, "needs_contact": True})
+        token = secrets.token_urlsafe(36)
+        db.execute("INSERT INTO telegram_auth_sessions (token_hash,telegram_id,expires_at) VALUES (?,?,?)",
+                   (hashlib.sha256(token.encode()).hexdigest(), uid, int(time.time()) + 30*86400))
+        db.commit()
+    response = jsonify({"authenticated": True, "token": token, "phone": user["phone"], "expires_in": 30*86400})
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.post("/api/auth/telegram/start")
@@ -774,3 +823,4 @@ def confirm_admin_password_reset():
         db.execute("DELETE FROM admin_security WHERE key IN ('reset_code_hash', 'reset_expires_at', 'reset_attempts')")
         db.commit()
     return jsonify({"ok": True, "message": "Yangi admin paroli saqlandi"})
+

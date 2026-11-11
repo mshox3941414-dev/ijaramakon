@@ -1691,54 +1691,164 @@ async function loadAdminOverview() {
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup();
 })();
 
-/* Verified Telegram phone sign-in: public browsing stays open, contact requires login. */
+/* Simple sign-in: native Telegram contact consent, with a guided browser fallback. */
 let loginChallenge = "";
-function openPhoneLogin() {
-  const dialog = $("phoneLoginModal");
-  if (!dialog) return;
-  dialog.classList.remove("hidden");
+let loginAttempt = 0;
+let loginPreviousFocus = null;
+let loginInertElements = [];
+function phoneLoginMessage(message) { $("phoneLoginMessage").textContent = message; }
+function nativePhoneLoginAvailable() {
+  const tg = window.Telegram?.WebApp;
+  return Boolean(tg?.initData && typeof tg.requestContact === "function" && tg.isVersionAtLeast?.("6.9"));
+}
+function showPhoneCodeLogin() {
+  loginAttempt++;
+  $("phoneLoginNative").classList.add("hidden");
+  $("phoneLoginBrowser").classList.remove("hidden");
+  $("phoneLoginStep1").classList.remove("hidden");
+  $("phoneLoginStep2").classList.add("hidden");
+  $("phoneLoginStart").disabled = false;
+  $("phoneLoginVerify").disabled = false;
+  phoneLoginMessage("");
   $("phoneLoginPhone").focus();
 }
-function closePhoneLogin() { $("phoneLoginModal")?.classList.add("hidden"); }
+function openPhoneLogin() {
+  const dialog = $("phoneLoginModal");
+  if (!dialog || !dialog.classList.contains("hidden")) return;
+  loginPreviousFocus = document.activeElement;
+  document.body.appendChild(dialog);
+  loginInertElements = [...document.body.children].filter(el => el !== dialog && !el.inert && !["SCRIPT","STYLE"].includes(el.tagName));
+  loginInertElements.forEach(el => { el.inert = true; });
+  document.body.classList.add("phone-login-open");
+  dialog.classList.remove("hidden");
+  if (nativePhoneLoginAvailable()) {
+    $("phoneLoginNative").classList.remove("hidden");
+    $("phoneLoginBrowser").classList.add("hidden");
+    $("phoneLoginQuick").disabled = false;
+    phoneLoginMessage("");
+    $("phoneLoginQuick").focus();
+  } else showPhoneCodeLogin();
+}
+function closePhoneLogin() {
+  loginAttempt++;
+  $("phoneLoginModal")?.classList.add("hidden");
+  document.body.classList.remove("phone-login-open");
+  loginInertElements.forEach(el => { el.inert = false; });
+  loginInertElements = [];
+  loginPreviousFocus?.focus();
+}
+function finishPhoneLogin(data) {
+  writeStorage("im_auth_token", data.token);
+  $("phoneLoginCode").value = "";
+  loginChallenge = "";
+  closePhoneLogin();
+  $("phoneLoginStatus").textContent = "✓ Tasdiqlangan: " + data.phone;
+  toast("Kirdingiz! Endi qo‘ng‘iroq qilish yoki SMS yozish mumkin.");
+}
+async function waitForTelegramContact(attempt) {
+  try {
+    for (let i = 0; i < 20 && attempt === loginAttempt; i++) {
+      const data = await api("/api/auth/telegram/miniapp", {
+        method: "POST", body: JSON.stringify({init_data: window.Telegram.WebApp.initData})
+      });
+      if (attempt !== loginAttempt) return;
+      if (data.authenticated && data.token) { finishPhoneLogin(data); return; }
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    if (attempt === loginAttempt) phoneLoginMessage("Tasdiq hali kelmadi. Qayta urinib ko‘ring yoki «Kod bilan kirish»ni tanlang.");
+  } catch (e) {
+    if (attempt === loginAttempt) phoneLoginMessage(e.message);
+  } finally {
+    if (attempt === loginAttempt) $("phoneLoginQuick").disabled = false;
+  }
+}
 document.addEventListener("DOMContentLoaded", () => {
   $("openPhoneLogin")?.addEventListener("click", openPhoneLogin);
   $("closePhoneLogin")?.addEventListener("click", closePhoneLogin);
-  $("phoneLoginStart")?.addEventListener("click", async () => {
+  $("phoneLoginUseCode").addEventListener("click", showPhoneCodeLogin);
+  $("phoneLoginBack").addEventListener("click", showPhoneCodeLogin);
+  $("phoneLoginQuick").addEventListener("click", () => {
+    const attempt = ++loginAttempt;
+    $("phoneLoginQuick").disabled = true;
+    phoneLoginMessage("Telegram oynasida raqamingizni ulashishga ruxsat bering.");
+    try {
+      // Invoke synchronously in the click gesture so Telegram can show its consent dialog.
+      window.Telegram.WebApp.requestContact(sent => {
+        if (attempt !== loginAttempt) return;
+        if (!sent) {
+          $("phoneLoginQuick").disabled = false;
+          phoneLoginMessage("Raqam ulashilmadi. Kirish uchun qayta bosing va ruxsat bering.");
+          return;
+        }
+        phoneLoginMessage("Raqamingiz tekshirilmoqda…");
+        waitForTelegramContact(attempt);
+      });
+    } catch (e) {
+      $("phoneLoginQuick").disabled = false;
+      phoneLoginMessage("Bu Telegram versiyasida «Kod bilan kirish» tugmasidan foydalaning.");
+    }
+  });
+  $("phoneLoginStart").addEventListener("click", async () => {
     const phone = $("phoneLoginPhone").value.trim();
+    if (!/^(?:\+?998)?\d{9}$/.test(phone.replace(/[\s()-]/g, ""))) {
+      phoneLoginMessage("Telefon raqamingizni kiriting. Masalan: +998901234567");
+      return;
+    }
+    const attempt = ++loginAttempt;
+    $("phoneLoginStart").disabled = true;
+    phoneLoginMessage("Tayyorlanmoqda…");
     try {
       const data = await api("/api/auth/telegram/start", {method:"POST",body:JSON.stringify({phone})});
+      if (attempt !== loginAttempt) return;
       loginChallenge = data.challenge;
+      $("phoneLoginStep1").classList.add("hidden");
       $("phoneLoginStep2").classList.remove("hidden");
       $("phoneLoginBot").href = data.bot_url;
-      $("phoneLoginCode").focus();
-      toast("Telegram botni oching, o'z raqamingizni ulashing va kodni kiriting");
-    } catch(e) { toast(e.message); }
+      phoneLoginMessage("");
+      $("phoneLoginBot").focus();
+    } catch (e) { if (attempt === loginAttempt) phoneLoginMessage(e.message); }
+    finally { if (attempt === loginAttempt) $("phoneLoginStart").disabled = false; }
   });
-  $("phoneLoginVerify")?.addEventListener("click", async () => {
+  $("phoneLoginBot").addEventListener("click", event => {
+    const tg = window.Telegram?.WebApp;
+    if (tg?.initData && typeof tg.openTelegramLink === "function") {
+      try { tg.openTelegramLink(event.currentTarget.href); event.preventDefault(); } catch (_) {}
+    }
+  });
+  $("phoneLoginVerify").addEventListener("click", async () => {
+    const code = $("phoneLoginCode").value.trim();
+    if (!/^\d{6}$/.test(code)) { phoneLoginMessage("Bot yuborgan 6 raqamli kodni kiriting."); return; }
+    const attempt = ++loginAttempt;
+    $("phoneLoginVerify").disabled = true;
+    phoneLoginMessage("Tekshirilmoqda…");
     try {
-      const data = await api("/api/auth/telegram/verify", {
-        method:"POST",body:JSON.stringify({challenge:loginChallenge,code:$("phoneLoginCode").value.trim()})
-      });
-      writeStorage("im_auth_token",data.token);
-      $("phoneLoginCode").value="";
-      $("phoneLoginStep2").classList.add("hidden");
-      closePhoneLogin();
-      toast("Telegram orqali kirish muvaffaqiyatli! Endi uy egasi bilan bog'lanishingiz mumkin.");
-      const status = $("phoneLoginStatus");
-      if(status) status.textContent="✓ Telegram orqali tasdiqlangan: "+data.phone;
-    } catch(e) { toast(e.message); }
+      const data = await api("/api/auth/telegram/verify", {method:"POST",body:JSON.stringify({challenge:loginChallenge,code})});
+      if (attempt === loginAttempt) finishPhoneLogin(data);
+    } catch (e) { if (attempt === loginAttempt) phoneLoginMessage(e.message); }
+    finally { if (attempt === loginAttempt) $("phoneLoginVerify").disabled = false; }
+  });
+  $("phoneLoginPhone").addEventListener("keydown", e => { if(e.key === "Enter") { e.preventDefault(); $("phoneLoginStart").click(); } });
+  $("phoneLoginCode").addEventListener("keydown", e => { if(e.key === "Enter") { e.preventDefault(); $("phoneLoginVerify").click(); } });
+  $("phoneLoginModal").addEventListener("keydown", e => {
+    if(e.key === "Escape") { e.stopPropagation(); closePhoneLogin(); }
+    if(e.key !== "Tab") return;
+    const controls = [...e.currentTarget.querySelectorAll("button, input, a[href]")].filter(el => !el.disabled && el.getClientRects().length);
+    const first=controls[0], last=controls[controls.length-1];
+    if(e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+    else if(!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
   });
   $("phoneLogout")?.addEventListener("click", async () => {
+    loginAttempt++;
     const token=readStorage("im_auth_token");
     if(token) try {await api("/api/auth/logout",{method:"POST",headers:{Authorization:"Bearer "+token}});} catch(e){}
     localStorage.removeItem("im_auth_token");
-    $("phoneLoginStatus").textContent="Mehmon sifatida ko'rish mumkin. Bog'lanish uchun Telegram orqali kiring.";
+    $("phoneLoginStatus").textContent="Mehmon sifatida ko‘rish mumkin. Bog‘lanish uchun kiring.";
     toast("Akkauntdan chiqildi");
   });
   const token=readStorage("im_auth_token");
   if(token) api("/api/auth/me",{headers:{Authorization:"Bearer "+token}})
     .then(data=>{
-      if(data.authenticated) $("phoneLoginStatus").textContent="✓ Telegram orqali tasdiqlangan: "+data.phone;
+      if(data.authenticated) $("phoneLoginStatus").textContent="✓ Tasdiqlangan: "+data.phone;
       else localStorage.removeItem("im_auth_token");
     }).catch(()=>{});
 });

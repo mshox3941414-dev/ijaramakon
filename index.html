@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1769e0">
+  <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=10">
+  <link rel="stylesheet" href="./style.css?v=11">
   <script src="./app.js?v=20261015-1841" defer></script>
 </head>
 <body>
@@ -18,7 +18,7 @@
         <small>Xorazm bo'ylab ijara uylari</small>
       </div>
     </div>
-    <span class="header-status">● Onlayn</span>
+    <div class="header-actions"><span class="location-pill">📍 Xorazm viloyati</span><span class="header-status">● Onlayn</span><button class="admin-shortcut" type="button" data-page="admin" aria-label="Admin panel" title="Admin panel">🛡️</button></div>
   </header>
 
   <main class="container">
@@ -33,9 +33,17 @@
 
     <section id="home" class="page active">
       <div class="welcome">
-        <span class="welcome-icon">🏡</span>
-        <h1>IjaraMakon'ga xush kelibsiz!</h1>
-        <p>Xorazm bo'ylab ijara uylarini qulay qidiring va e'lon joylashtiring.</p>
+        <div class="hero-content">
+          <span class="hero-eyebrow">✦ XORAZM BO'YLAB IJARA UYLARI</span>
+          <h1>O'zingizga mos <em>uy</em> shu yerdan boshlanadi.</h1>
+          <p>Xorazmning istalgan hududida ishonchli ijara e'lonlarini ko'ring, solishtiring va oson bog'laning.</p>
+          <div class="hero-buttons">
+            <button type="button" class="hero-primary" data-page="search">🔎 Uy qidirish</button>
+            <button type="button" class="hero-secondary" data-page="add">＋ E'lon berish</button>
+          </div>
+          <div class="hero-note">📍 13 ta tuman va shahar · Xorazm viloyati</div>
+        </div>
+        <div class="hero-art" aria-hidden="true"><div class="hero-arch"><div class="hero-sun"></div><div class="hero-tower tower-left"></div><div class="hero-tower tower-right"></div><div class="hero-dome"></div><div class="hero-door"></div></div><span class="hero-art-label">XIVA · XORAZM</span></div>
       </div>
       <div class="section-heading">
         <h2>So'nggi e'lonlar</h2>

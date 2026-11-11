@@ -1440,10 +1440,16 @@ function initLocationMaps() {
       setTimeout(() => {searchMap.invalidateSize();renderSearch();},50);
     }
   };
+  $("clearNearMe").onclick = () => {
+    nearbyLocation = null;
+    $("clearNearMe").classList.add("hidden");
+    renderSearch();
+  };
   $("nearMe").onclick = () => {
     if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
     navigator.geolocation.getCurrentPosition(pos => {
       nearbyLocation = {lat:pos.coords.latitude,lng:pos.coords.longitude};
+      $("clearNearMe").classList.remove("hidden");
       renderSearch();
       if ($("searchMapWrap").classList.contains("hidden")) $("toggleMap").click();
       if (searchMap) { setTimeout(() => searchMap.setView([pos.coords.latitude,pos.coords.longitude],12), 120); }

@@ -109,6 +109,18 @@ def initialize():
                 status TEXT DEFAULT 'pending', created_at TEXT NOT NULL
             )
         """)
+        # Nullable columns preserve all existing listings and bot writes.
+        for column in ("latitude", "longitude"):
+            try:
+                db.execute(f"ALTER TABLE houses ADD COLUMN {column} DOUBLE PRECISION")
+            except Exception as exc:
+                # PostgreSQL duplicate_column (42701); SQLite duplicate column.
+                if "already exists" not in str(exc).lower() and "duplicate column" not in str(exc).lower():
+                    if DATABASE_URL:
+                        db.db.rollback()
+                    raise
+                if DATABASE_URL:
+                    db.db.rollback()
         db.commit()
 
 
@@ -339,6 +351,16 @@ def create_house():
     except ValueError as exc:
         return error(str(exc))
 
+    lat_raw, lon_raw = form.get("latitude", ""), form.get("longitude", "")
+    latitude = longitude = None
+    if lat_raw or lon_raw:
+        try:
+            latitude, longitude = float(lat_raw), float(lon_raw)
+            if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+                return error("Xaritadagi koordinatalar noto'g'ri")
+        except (TypeError, ValueError):
+            return error("Xaritadagi koordinatalar noto'g'ri")
+
     values = (
         clean(form.get("owner"), 100),
         clean(form.get("district"), 100),
@@ -351,15 +373,16 @@ def create_house():
         clean(form.get("address"), 200),
         clean(form.get("description"), 2000),
         photo_url,
-        datetime.now(timezone.utc).isoformat()
+        datetime.now(timezone.utc).isoformat(),
+        latitude, longitude
     )
 
     with db_lock, connect() as db:
         cur = db.execute("""
             INSERT INTO houses
             (owner, district, mahalla, type, rooms, repair, price,
-             phone, address, description, photo_url, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?) RETURNING id
+             phone, address, description, photo_url, status, created_at, latitude, longitude)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?) RETURNING id
         """, values)
         db.commit()
         listing_id = cur.fetchone()["id"] if DATABASE_URL else cur.fetchone()[0]

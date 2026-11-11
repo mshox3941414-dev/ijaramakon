@@ -651,14 +651,6 @@ async function showDetail(item) {
   const photo = photos.length
     ? `<div class="detail-gallery"><div class="gallery-stage"><img class="detail-photo" id="galleryMainPhoto" src="${escapeHTML(photos[0])}" alt="Uy rasmi"><button class="gallery-arrow gallery-prev" type="button" aria-label="Oldingi rasm">‹</button><button class="gallery-arrow gallery-next" type="button" aria-label="Keyingi rasm">›</button><span class="gallery-count">1 / ${photos.length}</span></div><div class="gallery-thumbs">${photos.map((src,i)=>`<button class="gallery-thumb ${i===0?"active":""}" type="button" data-index="${i}" aria-label="${i+1}-rasm"><img src="${escapeHTML(src)}" alt="Uy rasmi ${i+1}" loading="lazy"></button>`).join("")}</div></div>`
     : `<div class="listing-photo photo-placeholder">${listingIcon("home")}</div>`;
-  /* old markup removed */
-  const unusedPhoto = false;
-  /* 
-    ? `<img class="detail-photo"
-         src="${escapeHTML(imageURL(item.photo_url))}"
-         alt="Uy rasmi">`
-    : `<div class="listing-photo photo-placeholder">${listingIcon("home")}</div>`; 
-  */
   wrapper.innerHTML = `
     ${photo}
     <h2>${escapeHTML(item.type)}</h2>

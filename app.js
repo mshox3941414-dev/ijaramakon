@@ -215,6 +215,7 @@ const repairTypes = [
 ];
 
 const $ = id => document.getElementById(id);
+let adminModeratorUsername = "";
 
 const money = n =>
   Number(n || 0).toLocaleString("uz-UZ");
@@ -927,7 +928,8 @@ async function loadAdmin() {
   try {
     const data = await api("/api/admin/listings", {
       headers: {
-        "X-Admin-Password": adminPassword
+        "X-Admin-Password": adminPassword,
+        "X-Moderator-Username": adminModeratorUsername
       }
     });
 
@@ -936,6 +938,9 @@ async function loadAdmin() {
     }
 
     currentAdminRole = data.role;
+    $("adminModeratorsSection").classList.toggle("hidden",currentAdminRole !== "admin");
+    await loadAdminAnalytics();
+    if (currentAdminRole === "admin") await loadModerators();
     $("adminPassword").value = "";
     $("adminLogin").classList.add("hidden");
     $("adminContent").classList.remove("hidden");
@@ -976,6 +981,7 @@ async function loadAdmin() {
       !statusFilter || item.status === statusFilter), true);
   } catch (err) {
     adminPassword = "";
+    adminModeratorUsername = "";
     $("adminPassword").value = "";
     currentAdminRole = null;
     $("adminContent").classList.add("hidden");
@@ -1757,7 +1763,7 @@ async function editAdminListing(item) {
 }
 
 async function loadAdminOverview() {
-  const data = await api("/api/admin/overview", {headers:{"X-Admin-Password":adminPassword}});
+  const data = await api("/api/admin/overview", {headers:{"X-Admin-Password":adminPassword,"X-Moderator-Username":adminModeratorUsername}});
   const reports = $("adminReports");
   reports.replaceChildren();
   if (!data.reports.length) reports.textContent = "Shikoyatlar yo'q";

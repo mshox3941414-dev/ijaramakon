@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=20261111-premiumicons16">
+  <link rel="stylesheet" href="./style.css?v=20261111-formicons17">
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-  <script src="./app.js?v=20261111-premiumicons16" defer></script><script src="./i18n.js?v=20261111-premiumicons16" defer></script>
+  <script src="./app.js?v=20261111-formicons17" defer></script><script src="./i18n.js?v=20261111-formicons17" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
   <style>
@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function initTelegramViewport() {
           </div>
           <div class="field">
             <label for="addImage">Uy rasmi</label>
-            <input id="addImage" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+            <input id="addImage" class="premium-file-native" type="file" accept="image/jpeg,image/png,image/webp" multiple><label for="addImage" class="premium-file-control"><svg class="premium-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m4 17 5-5 4 4 3-3 4 4"/></svg><span class="premium-file-action">Расм танлаш</span><span id="addImageFileStatus" class="premium-file-status">Расм танланмаган</span></label>
           </div>
         </div>
         <div class="field">

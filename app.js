@@ -429,6 +429,8 @@ function navigate(page) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 
+  if (page === "add" && addMap) requestAnimationFrame(() => setTimeout(() => addMap.invalidateSize({pan:false}), 180));
+  if (page === "search" && searchMap) requestAnimationFrame(() => setTimeout(() => searchMap.invalidateSize({pan:false}), 180));
   if (page === "search") renderSearch();
   if (page === "saved") renderSaved();
   if (page === "profile") renderProfileListings();
@@ -1469,7 +1471,7 @@ function initLocationMaps() {
       addMap = makeMap("addMap");
       addMap.on("click", e => setSelectedLocation(e.latlng.lat,e.latlng.lng));
     }
-    setTimeout(() => addMap.invalidateSize(), 50);
+    requestAnimationFrame(() => setTimeout(() => addMap.invalidateSize({pan:false}), 180));
   };
   $("useMyLocation").onclick = () => {
     if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
@@ -1490,7 +1492,7 @@ function initLocationMaps() {
     wrap.classList.toggle("hidden");
     if (!wrap.classList.contains("hidden")) {
       if (!searchMap) {searchMap=makeMap("searchMap");searchMarkers=L.layerGroup().addTo(searchMap);}
-      setTimeout(() => {searchMap.invalidateSize();renderSearch();},50);
+      requestAnimationFrame(() => setTimeout(() => {searchMap.invalidateSize({pan:false});renderSearch();},180));
     }
   };
   $("clearNearMe").onclick = () => {
@@ -1509,6 +1511,7 @@ function initLocationMaps() {
     }, () => toast("GPS ruxsati berilmadi"),{timeout:12000});
   };
 }
+window.addEventListener("resize", () => { if(addMap) addMap.invalidateSize({pan:false}); if(searchMap) searchMap.invalidateSize({pan:false}); });
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",initLocationMaps);
 else initLocationMaps();
 

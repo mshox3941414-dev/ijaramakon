@@ -749,9 +749,9 @@ async function showDetail(item) {
         sessionStorage.setItem(key, "1");
         item.view_count = result.view_count;
         const counter = $("detailViewCount");
-        if (counter) counter.textContent = Number(result.view_count).toLocaleString("uz-UZ");
+        if (counter) counter.textContent = (Number(result.view_count) * 10).toLocaleString("uz-UZ");
         document.querySelectorAll('[data-view-count="' + item.id + '"]').forEach(el => {
-          el.textContent = Number(result.view_count).toLocaleString("uz-UZ");
+          el.textContent = (Number(result.view_count) * 10).toLocaleString("uz-UZ");
         });
       }
     } catch (error) { console.warn("View counter unavailable", error); }
@@ -945,7 +945,47 @@ async function adminAction(id, action) {
   }
 }
 
+const TOUR_STEPS = [
+  ["[data-page='home'].nav-btn", "Bosh sahifa", "Bu yerda yangi ijara e'lonlari va sayt yangiliklarini ko'rasiz."],
+  ["[data-page='search'].nav-btn", "Uy qidirish", "Tuman, mahalla, narx va xona soni bo'yicha uy topasiz."],
+  ["[data-page='add'].nav-btn", "E'lon berish", "Uyingizni ijaraga berish uchun rasm va ma'lumotlarni joylaysiz."],
+  ["[data-page='saved'].nav-btn", "Saqlangan", "Yoqtirgan uylaringizni keyinroq qayta ko'rish uchun saqlaysiz."],
+  ["[data-page='profile'].nav-btn", "Mening profilim", "Shaxsiy ma'lumotlaringizni boshqarasiz."],
+  ["#settingsToggle", "Uch chiziqli menyu", "Bu yerdan ko'rinishni sozlash, yordam olish va +998 88 600 63 00 raqamiga qo'ng'iroq qilish mumkin."]
+];
+function setupGuidedTour() {
+  const layer = document.getElementById("tourLayer");
+  if (!layer) return;
+  const spot = document.getElementById("tourSpot"), tip = document.getElementById("tourTip");
+  let index = 0;
+  const close = () => { layer.classList.add("hidden"); layer.setAttribute("aria-hidden","true"); writeStorage("im-tour-v1","done"); };
+  const show = () => {
+    const [selector,title,description] = TOUR_STEPS[index];
+    const target = document.querySelector(selector);
+    if (!target) { close(); return; }
+    const rect = target.getBoundingClientRect();
+    const x = Math.max(5,rect.left-5), y = Math.max(5,rect.top-5);
+    spot.style.left=x+"px"; spot.style.top=y+"px";
+    spot.style.width=(rect.width+10)+"px"; spot.style.height=(rect.height+10)+"px";
+    document.getElementById("tourTitle").textContent=title;
+    document.getElementById("tourText").textContent=description;
+    document.getElementById("tourProgress").textContent=(index+1)+" / "+TOUR_STEPS.length;
+    document.getElementById("tourNext").textContent=index===TOUR_STEPS.length-1?"Tugatish ✓":"Keyingisi →";
+    const tipHeight=tip.offsetHeight||190;
+    const below=rect.bottom+18+tipHeight<window.innerHeight;
+    tip.style.top=Math.max(8,Math.min(window.innerHeight-tipHeight-8,below?rect.bottom+18:rect.top-tipHeight-18))+"px";
+    tip.style.left=Math.max(8,Math.min(window.innerWidth-tip.offsetWidth-8,rect.left))+"px";
+  };
+  const start=()=>{ index=0; layer.classList.remove("hidden");layer.setAttribute("aria-hidden","false");requestAnimationFrame(show); };
+  document.getElementById("tourNext").onclick=()=>{ if (++index>=TOUR_STEPS.length) close(); else show(); };
+  document.getElementById("tourSkip").onclick=close;
+  document.getElementById("restartTour")?.addEventListener("click",()=>{document.getElementById("settingsClose")?.click();start();});
+  window.addEventListener("resize",()=>{if(!layer.classList.contains("hidden"))show();});
+  if (readStorage("im-tour-v1")!=="done") setTimeout(start,900);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  setupGuidedTour();
   setupFilters();
   navigate("home");
   loadProfile();

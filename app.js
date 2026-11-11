@@ -592,7 +592,7 @@ function renderSearch() {
   const repair = $("searchRepair").value;
   const max = Number($("searchMaxPrice").value || 0);
 
-  const filtered = listings.filter(item =>
+  let filtered = listings.filter(item =>
     item.status === "approved" &&
     (!district || item.district === district) &&
     (!mahalla || item.mahalla === mahalla) &&
@@ -609,7 +609,15 @@ function renderSearch() {
     (!max || Number(item.price) <= max)
   );
 
-  $("resultCount").textContent = filtered.length + " ta";
+  if (nearbyLocation) {
+    const validDistance = item => item.latitude != null && item.longitude != null &&
+      Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
+    filtered = filtered.filter(validDistance).sort((a,b) =>
+      distanceKm(nearbyLocation.lat,nearbyLocation.lng,Number(a.latitude),Number(a.longitude)) -
+      distanceKm(nearbyLocation.lat,nearbyLocation.lng,Number(b.latitude),Number(b.longitude))
+    );
+  }
+    $("resultCount").textContent = filtered.length + " ta";
   renderCards("searchResults", filtered);
   renderMapListings(filtered);
 }
@@ -1362,6 +1370,12 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 /* Optional maps: only listings with user-supplied coordinates are pinned. */
 let selectedLocation = null;
+let nearbyLocation = null;
+function distanceKm(lat1,lon1,lat2,lon2) {
+  const r = Math.PI / 180, dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
 let addMap, addMarker, searchMap, searchMarkers;
 function mapReady() { return typeof L !== "undefined"; }
 function makeMap(id) {
@@ -1429,6 +1443,8 @@ function initLocationMaps() {
   $("nearMe").onclick = () => {
     if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
     navigator.geolocation.getCurrentPosition(pos => {
+      nearbyLocation = {lat:pos.coords.latitude,lng:pos.coords.longitude};
+      renderSearch();
       if ($("searchMapWrap").classList.contains("hidden")) $("toggleMap").click();
       if (searchMap) { setTimeout(() => searchMap.setView([pos.coords.latitude,pos.coords.longitude],12), 120); }
     }, () => toast("GPS ruxsati berilmadi"),{timeout:12000});

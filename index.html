@@ -194,6 +194,14 @@
           <input id="adminPassword" type="password" autocomplete="current-password">
         </div>
         <button id="adminLoginButton" class="primary-btn">Kirish</button>
+        <button id="adminForgotPassword" type="button" class="secondary-btn">Parolni unutdingizmi?</button>
+        <div id="adminResetPanel" class="hidden">
+          <p>Telegram orqali yuborilgan 6 raqamli kodni kiriting. Kod 10 daqiqa amal qiladi.</p>
+          <button id="adminSendResetCode" type="button" class="secondary-btn">Telegramga kod yuborish</button>
+          <div class="field"><label for="adminResetCode">Tasdiqlash kodi</label><input id="adminResetCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
+          <div class="field"><label for="adminNewPassword">Yangi parol (kamida 12 belgi)</label><input id="adminNewPassword" type="password" autocomplete="new-password"></div>
+          <button id="adminConfirmReset" type="button" class="primary-btn">Parolni yangilash</button>
+        </div>
       </div>
       <div id="adminContent" class="hidden">
         <div class="button-row">

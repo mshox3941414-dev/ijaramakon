@@ -16,7 +16,7 @@ const IJARA_TRANSLATIONS={"Xorazm bo'ylab ijara uylari":{"ru":"Аренда жи
   if(!text||!text.trim())return;
   let original=originals.get(node);
   if(original===undefined){ original=text; originals.set(node,original); }
-  else if(text!==original && text!==translated(original,language)){
+  else if(text!==original && !["uz","ru","en"].some(lang=>text===translated(original,lang))){
    // The application updated this node: treat its new text as the source.
    original=text; originals.set(node,original);
   }

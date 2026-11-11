@@ -518,6 +518,7 @@ function createCard(item, admin = false) {
       <div class="listing-actions">
         <button class="primary-btn view-btn">Batafsil</button>
         ${!admin ? `
+          <button class="secondary-btn report-btn">Shikoyat</button>
           <button class="secondary-btn save-btn">
             ${listingIcon("heart")} ${saved ? "Saqlangan" : "Saqlash"}
           </button>
@@ -526,6 +527,7 @@ function createCard(item, admin = false) {
 
       ${admin ? `
         <div class="listing-actions">
+          <button class="secondary-btn edit-btn">Tahrirlash</button>
           <button class="primary-btn approve-btn">Tasdiqlash</button>
           <button class="danger-btn reject-btn">Rad etish</button>
           <button class="secondary-btn rented-btn">Berildi</button>
@@ -537,9 +539,11 @@ function createCard(item, admin = false) {
   card.querySelector(".view-btn").onclick = () => showDetail(item);
 
   if (!admin) {
+    card.querySelector(".report-btn").onclick = () => reportListing(item.id);
     card.querySelector(".save-btn").onclick =
       () => toggleSaved(item.id);
   } else {
+    card.querySelector(".edit-btn").onclick = () => editAdminListing(item);
     card.querySelector(".approve-btn").onclick =
       () => adminAction(item.id, "approve");
 
@@ -832,6 +836,7 @@ async function loadAdmin() {
       true
     );
 
+    await loadAdminOverview();
     const counts = Object.fromEntries(["pending","approved","rejected","rented"].map(status =>
       [status,data.listings.filter(item => item.status === status).length]));
     $("adminStats").textContent = "Jami: " + data.listings.length +
@@ -1463,3 +1468,71 @@ function initLocationMaps() {
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",initLocationMaps);
 else initLocationMaps();
+
+async function reportListing(id) {
+  const reason = prompt("Shikoyat sababini yozing (kamida 10 belgi):");
+  if (reason === null) return;
+  try {
+    await api("/api/listings/" + encodeURIComponent(id) + "/report", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({reason})
+    });
+    toast("Shikoyat qabul qilindi");
+  } catch (err) { toast(err.message); }
+}
+
+async function editAdminListing(item) {
+  const fields = ["district","mahalla","type","rooms","repair","price","phone","address","description"];
+  const changes = {};
+  for (const key of fields) {
+    const value = prompt(key + ":", String(item[key] ?? ""));
+    if (value === null) return;
+    if (value !== String(item[key] ?? "")) changes[key] = value;
+  }
+  if (!Object.keys(changes).length) return;
+  try {
+    await api("/api/admin/listings/" + encodeURIComponent(item.id), {
+      method: "PATCH", headers: {"Content-Type": "application/json","X-Admin-Password":adminPassword},
+      body: JSON.stringify(changes)
+    });
+    toast("E'lon yangilandi");
+    await loadAdmin();
+    await loadListings();
+  } catch (err) { toast(err.message); }
+}
+
+async function loadAdminOverview() {
+  const data = await api("/api/admin/overview", {headers:{"X-Admin-Password":adminPassword}});
+  const reports = $("adminReports");
+  reports.replaceChildren();
+  if (!data.reports.length) reports.textContent = "Shikoyatlar yo'q";
+  data.reports.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "button-row";
+    const label = document.createElement("span");
+    label.textContent = "#" + item.listing_id + " — " + item.reason + " (" + item.status + ")";
+    row.appendChild(label);
+    if (item.status === "open") {
+      const btn = document.createElement("button");
+      btn.className = "secondary-btn";
+      btn.textContent = "Ko'rib chiqildi";
+      btn.onclick = async () => {
+        try {
+          await api("/api/admin/reports/" + item.id + "/resolve", {method:"POST",headers:{"X-Admin-Password":adminPassword}});
+          await loadAdmin();
+        } catch(err) {toast(err.message);}
+      };
+      row.appendChild(btn);
+    }
+    reports.appendChild(row);
+  });
+  const audit = $("adminAudit");
+  audit.replaceChildren();
+  if (!data.audit) audit.textContent = "Harakatlar tarixi faqat bosh adminga ko'rinadi";
+  else if (!data.audit.length) audit.textContent = "Hali harakatlar yo'q";
+  else data.audit.forEach(item => {
+    const row = document.createElement("p");
+    row.textContent = item.created_at + " — " + item.actor + " — " + item.action + " #" + (item.listing_id ?? "");
+    audit.appendChild(row);
+  });
+}

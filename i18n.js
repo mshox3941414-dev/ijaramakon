@@ -41,6 +41,18 @@ IJARA_TRANSLATIONS["Kvartira"]={ru:"Квартира",en:"Apartment"};
 IJARA_TRANSLATIONS["Xorazm bo‘ylab ijara xizmatlari"]={ru:"Аренда жилья по Хорезму",en:"Rental services across Khorezm"};
 IJARA_TRANSLATIONS["Yordam: +998 88 600 63 00"]={ru:"Помощь: +998 88 600 63 00",en:"Help: +998 88 600 63 00"};
 IJARA_TRANSLATIONS["Yo‘riqnoma"]={ru:"Инструкция",en:"Guide"};
+IJARA_TRANSLATIONS["Ijara"]={ru:"Аренда",en:"Rental"};
+IJARA_TRANSLATIONS["Ijara uyi"]={ru:"Арендное жильё",en:"Rental home"};
+IJARA_TRANSLATIONS["Ijara uy"]={ru:"Арендное жильё",en:"Rental home"};
+IJARA_TRANSLATIONS["IjaraMakon"]={ru:"IjaraMakon",en:"IjaraMakon"};
+IJARA_TRANSLATIONS["Tasdiqlangan"]={ru:"Подтверждено",en:"Verified"};
+IJARA_TRANSLATIONS["Uy haqida ma'lumot"]={ru:"Информация о жилье",en:"Property details"};
+IJARA_TRANSLATIONS["Uy haqida ma’lumot"]={ru:"Информация о жилье",en:"Property details"};
+IJARA_TRANSLATIONS["Qo'ng'iroq qilish"]={ru:"Позвонить",en:"Call"};
+IJARA_TRANSLATIONS["SMS yozish"]={ru:"Написать SMS",en:"Send SMS"};
+IJARA_TRANSLATIONS["Joylashuv"]={ru:"Расположение",en:"Location"};
+IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
+IJARA_TRANSLATIONS["Batafsil"]={ru:"Подробнее",en:"Details"};
 (function(){
  const KEY="im-ui-language";
  let language="uz";
@@ -81,16 +93,25 @@ IJARA_TRANSLATIONS["Yo‘riqnoma"]={ru:"Инструкция",en:"Guide"};
    document.documentElement.lang=language;
   }finally{busy=false;}
  }
+ function updateFlag(){
+  const flag=document.getElementById("languageFlag");
+  if(!flag)return;
+  const country=language==="ru"?"ru":language==="en"?"gb":"uz";
+  flag.src="https://flagcdn.com/w40/"+country+".png";
+  flag.alt=language==="ru"?"Флаг России":language==="en"?"United Kingdom flag":"O‘zbekiston bayrog‘i";
+ }
  function setLanguage(lang){
   if(!["uz","ru","en"].includes(lang))return;
   language=lang;
   try{localStorage.setItem(KEY,lang);}catch(_){}
   apply();
+  updateFlag();
  }
  document.addEventListener("DOMContentLoaded",()=>{
   const select=document.getElementById("siteLanguage");
   if(select){select.value=language;select.addEventListener("change",()=>setLanguage(select.value));}
   apply();
+  updateFlag();
   const observer=new MutationObserver(records=>{
    if(busy)return;
    for(const record of records){

@@ -949,9 +949,28 @@ async function loadAdmin() {
     await loadAdminOverview();
     const counts = Object.fromEntries(["pending","approved","rejected","rented"].map(status =>
       [status,data.listings.filter(item => item.status === status).length]));
-    $("adminStats").textContent = "Jami: " + data.listings.length +
-      " | Kutilmoqda: " + counts.pending + " | Tasdiqlangan: " + counts.approved +
-      " | Rad etilgan: " + counts.rejected + " | Ijaraga berilgan: " + counts.rented;
+    const metrics = [
+      ["Jami e'lonlar",data.listings.length,"all"],
+      ["Kutilmoqda",counts.pending,"pending"],
+      ["Tasdiqlangan",counts.approved,"approved"],
+      ["Rad etilgan",counts.rejected,"rejected"],
+      ["Ijaraga berilgan",counts.rented,"rented"]
+    ];
+    $("adminStats").replaceChildren();
+    metrics.forEach(([label,value,status]) => {
+      const tile = document.createElement("div");
+      tile.className = "admin-metric admin-metric-" + status;
+      const name = document.createElement("span"); name.className = "admin-metric-label"; name.textContent = label;
+      const number = document.createElement("strong"); number.className = "admin-metric-value"; number.textContent = value.toLocaleString("uz-UZ");
+      tile.append(name,number);
+      if (status !== "all") {
+        tile.setAttribute("role","button"); tile.tabIndex = 0;
+        const filter = () => { $("adminStatusFilter").value = status; $("adminStatusFilter").dispatchEvent(new Event("change")); document.getElementById("admin-listings-section")?.scrollIntoView({behavior:"smooth",block:"start"}); };
+        tile.addEventListener("click",filter);
+        tile.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();filter();}});
+      }
+      $("adminStats").appendChild(tile);
+    });
     const statusFilter = $("adminStatusFilter").value;
     renderCards("adminListings", data.listings.filter(item =>
       !statusFilter || item.status === statusFilter), true);

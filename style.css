@@ -753,3 +753,9 @@ html[data-mode="dark"] .location-pill{background:#263a55!important;color:#e4eeff
 
 /* Modal dialogs must always overlay the sticky desktop header. */
 .modal:not(.hidden){z-index:2000!important}
+
+/* Listing details: never allow sticky navigation to overlap an open dialog. */
+body:has(#detailModal:not(.hidden)) .top-utility-bar,
+body:has(#detailModal:not(.hidden)) .header,
+body:has(#detailModal:not(.hidden)) .main-nav{position:relative!important;z-index:0!important}
+body:has(#detailModal:not(.hidden)) #detailModal{z-index:100000!important}

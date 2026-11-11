@@ -320,6 +320,14 @@ document.addEventListener("DOMContentLoaded", function initTelegramViewport() {
             <a href="#admin-listings-section">E'lonlar <span>↗</span></a><a href="#admin-reports-section">Shikoyatlar <span>↗</span></a><a href="#admin-audit-section">Harakatlar tarixi <span>↗</span></a>
           </nav>
         </div>
+        <section id="admin-analytics" class="admin-extra-panel">
+          <div class="admin-section-header"><div><h2>Statistika va tahlil</h2><p>Tuman va mahallalar kesimida e'lonlar hamda haqiqiy ko'rishlar</p></div><button id="adminExcel" type="button" class="primary-btn">Excel yuklab olish</button></div>
+          <div class="admin-analytics-summary" id="adminAnalyticsSummary"></div>
+          <div class="admin-chart-grid"><div class="admin-chart-panel"><h3>Tumanlar bo'yicha e'lonlar</h3><div id="adminDistrictListingsChart"></div></div><div class="admin-chart-panel"><h3>Tumanlar bo'yicha ko'rishlar</h3><div id="adminDistrictViewsChart"></div></div></div>
+          <div class="field"><label for="adminDistrictPick">Mahalla statistikasini ko'rish uchun tumanni tanlang</label><select id="adminDistrictPick"></select></div>
+          <div class="admin-chart-grid"><div class="admin-chart-panel"><h3>Mahallalar bo'yicha e'lonlar</h3><div id="adminMahallaListingsChart"></div></div><div class="admin-chart-panel"><h3>Mahallalar bo'yicha ko'rishlar</h3><div id="adminMahallaViewsChart"></div></div></div>
+        </section>
+        <section id="adminModeratorsSection" class="admin-extra-panel hidden"><div class="admin-section-header"><div><h2>Moderatorlar va ruxsatlar</h2><p>Moderator faqat e'lon va shikoyatlarni boshqaradi</p></div></div><div class="admin-moderator-create"><input id="newModeratorName" placeholder="Moderator logini" autocomplete="off"><input id="newModeratorPassword" type="password" placeholder="Kamida 12 belgili parol" autocomplete="new-password"><button id="createModerator" class="primary-btn" type="button">Moderator qo'shish</button></div><div id="adminModeratorsList"></div></section>
         <div class="field"><label for="adminStatusFilter">Barcha e'lonlarni holati bo'yicha saralash</label>
           <select id="adminStatusFilter"><option value="">Barcha holatlar</option><option value="pending">Kutilmoqda</option><option value="approved">Tasdiqlangan</option><option value="rejected">Rad etilgan</option><option value="rented">Ijaraga berilgan</option></select></div>
         <div class="section-heading" id="admin-reports-section"><h2>Shikoyatlar</h2></div><div id="adminReports" class="panel"></div><div class="section-heading" id="admin-audit-section"><h2>Admin harakatlari</h2></div><div id="adminAudit" class="panel"></div><div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>

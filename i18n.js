@@ -106,14 +106,104 @@ IJARA_TRANSLATIONS["Ro'yxatdan qidirish"]={ru:"Поиск по списку",en:
 IJARA_TRANSLATIONS["Barcha hududlar"]={ru:"Все районы",en:"All areas"};
 IJARA_TRANSLATIONS["Barcha ta'mir turlari"]={ru:"Любое состояние",en:"All conditions"};
 IJARA_TRANSLATIONS["Ko'p qavatli uydagi kvartira"]={ru:"Квартира в многоэтажном доме",en:"Apartment in a multi-storey building"};
+IJARA_TRANSLATIONS["Hovli uy"]={ru:"Частный дом",en:"Detached house"};
+IJARA_TRANSLATIONS["Oddiy ta'mir"]={ru:"Обычный ремонт",en:"Basic renovation"};
+IJARA_TRANSLATIONS["O'rtacha ta'mir"]={ru:"Средний ремонт",en:"Average renovation"};
+IJARA_TRANSLATIONS["Ta'mirsiz"]={ru:"Без ремонта",en:"Unrenovated"};
+IJARA_TRANSLATIONS["Holati noma’lum"]={ru:"Статус неизвестен",en:"Unknown status"};
+IJARA_TRANSLATIONS["⏳ Kutilmoqda"]={ru:"⏳ Ожидает",en:"⏳ Pending"};
+IJARA_TRANSLATIONS["✅ Tasdiqlangan"]={ru:"✅ Подтверждено",en:"✅ Approved"};
+IJARA_TRANSLATIONS["❌ Rad etilgan"]={ru:"❌ Отклонено",en:"❌ Rejected"};
+IJARA_TRANSLATIONS["🏠 Ijaraga berilgan"]={ru:"🏠 Сдано",en:"🏠 Rented"};
+IJARA_TRANSLATIONS["Hozircha e'lonlar topilmadi"]={ru:"Объявления пока не найдены",en:"No listings found yet"};
+IJARA_TRANSLATIONS["Saqlanganlardan olindi"]={ru:"Удалено из избранного",en:"Removed from saved"};
+IJARA_TRANSLATIONS["E'lon saqlandi"]={ru:"Объявление сохранено",en:"Listing saved"};
+IJARA_TRANSLATIONS["Uy rasmi"]={ru:"Фото жилья",en:"Property photo"};
+IJARA_TRANSLATIONS["Barcha holatlar"]={ru:"Все статусы",en:"All statuses"};
+IJARA_TRANSLATIONS["Ma’lumot topilmadi"]={ru:"Ничего не найдено",en:"No results found"};
+IJARA_TRANSLATIONS["Qidirish..."]={ru:"Поиск...",en:"Search..."};
+IJARA_TRANSLATIONS["Ro'yxatdan qidirish"]={ru:"Поиск по списку",en:"Search the list"};
+IJARA_TRANSLATIONS["Rasm tanlash"]={ru:"Выбрать фото",en:"Choose photos"};
+IJARA_TRANSLATIONS["Rasm tanlanmagan"]={ru:"Фото не выбрано",en:"No photo selected"};
+IJARA_TRANSLATIONS["Расм танлаш"]={ru:"Выбрать фото",en:"Choose photos"};
+IJARA_TRANSLATIONS["Расм танланмаган"]={ru:"Фото не выбрано",en:"No photo selected"};
+IJARA_TRANSLATIONS["Barcha qavatlar"]={ru:"Все этажи",en:"All floors"};
+IJARA_TRANSLATIONS["Qavatni tanlang"]={ru:"Выберите этаж",en:"Select floor"};
+IJARA_TRANSLATIONS["Kvartira qavati"]={ru:"Этаж квартиры",en:"Apartment floor"};
+IJARA_TRANSLATIONS["Kvartira qavati *"]={ru:"Этаж квартиры *",en:"Apartment floor *"};
+IJARA_TRANSLATIONS["Barcha uy turlari"]={ru:"Все типы жилья",en:"All property types"};
+IJARA_TRANSLATIONS["Barcha xonalar"]={ru:"Все комнаты",en:"All room counts"};
+IJARA_TRANSLATIONS["Barcha ta'mir turlari"]={ru:"Любое состояние",en:"Any condition"};
+IJARA_TRANSLATIONS["Tumanni tanlang"]={ru:"Выберите район",en:"Select district"};
+IJARA_TRANSLATIONS["Mahallani tanlang"]={ru:"Выберите махаллю",en:"Select neighborhood"};
+IJARA_TRANSLATIONS["Uy turini tanlang"]={ru:"Выберите тип жилья",en:"Select property type"};
+IJARA_TRANSLATIONS["Ta'mir holati"]={ru:"Состояние ремонта",en:"Condition"};
+IJARA_TRANSLATIONS["Xonalar soni"]={ru:"Количество комнат",en:"Rooms"};
+IJARA_TRANSLATIONS["Tuman yoki shahar"]={ru:"Район или город",en:"District or city"};
+IJARA_TRANSLATIONS["Mahalla"]={ru:"Махалля",en:"Neighborhood"};
+IJARA_TRANSLATIONS["Yer uchastkali uy"]={ru:"Дом с земельным участком",en:"House with land"};
+IJARA_TRANSLATIONS["Ko'p qavatli uydagi kvartira"]={ru:"Квартира в многоэтажном доме",en:"Apartment in a multi-storey building"};
+IJARA_TRANSLATIONS["Mehmon sifatida ko‘rish mumkin. Bog‘lanish uchun kiring."]={ru:"Можно просматривать как гость. Для связи войдите.",en:"You can browse as a guest. Sign in to contact."};
+IJARA_TRANSLATIONS["Server javobi kechikdi. Birozdan so‘ng qayta urinib ko‘ring."]={ru:"Сервер отвечает слишком долго. Повторите попытку позже.",en:"Server response timed out. Please try again."};
+IJARA_TRANSLATIONS["Serverga ulanib bo‘lmadi. Internet va Render holatini tekshiring."]={ru:"Не удалось подключиться к серверу. Проверьте интернет и Render.",en:"Could not connect to server. Check your connection and Render."};
+IJARA_TRANSLATIONS["Brauzer saqlashga ruxsat bermadi. Ma’lumot faqat shu sessiyada qoladi."]={ru:"Браузер запретил сохранение. Данные останутся только в этой сессии.",en:"Browser storage is unavailable. Data will remain only for this session."};
+IJARA_TRANSLATIONS["Server xatosi: "]={ru:"Ошибка сервера: ",en:"Server error: "};
+IJARA_TRANSLATIONS["Server javobi noto‘g‘ri (HTTP "]={ru:"Некорректный ответ сервера (HTTP ",en:"Invalid server response (HTTP "};
+IJARA_TRANSLATIONS["Yopish"]={ru:"Закрыть",en:"Close"};
+IJARA_TRANSLATIONS["Tanlash"]={ru:"Выбрать",en:"Select"};
+IJARA_TRANSLATIONS["Yuklanmoqda..."]={ru:"Загрузка...",en:"Loading..."};
+IJARA_TRANSLATIONS["Kirish"]={ru:"Войти",en:"Sign in"};
+IJARA_TRANSLATIONS["Chiqish"]={ru:"Выйти",en:"Sign out"};
+IJARA_TRANSLATIONS["Tasdiqlash"]={ru:"Подтвердить",en:"Confirm"};
+IJARA_TRANSLATIONS["Bekor qilish"]={ru:"Отмена",en:"Cancel"};
+IJARA_TRANSLATIONS["Saqlash"]={ru:"Сохранить",en:"Save"};
+IJARA_TRANSLATIONS["Yuborish"]={ru:"Отправить",en:"Send"};
+IJARA_TRANSLATIONS["Yangilash"]={ru:"Обновить",en:"Refresh"};
+IJARA_TRANSLATIONS["Xatolik"]={ru:"Ошибка",en:"Error"};
+IJARA_TRANSLATIONS["Muvaffaqiyatli"]={ru:"Успешно",en:"Success"};
+IJARA_TRANSLATIONS["Joylashuv belgilanmagan"]={ru:"Местоположение не указано",en:"Location not set"};
+IJARA_TRANSLATIONS["Xaritani ochish"]={ru:"Открыть карту",en:"Open map"};
+IJARA_TRANSLATIONS["Joyimni aniqlash"]={ru:"Определить местоположение",en:"Find my location"};
+IJARA_TRANSLATIONS["Belgini tozalash"]={ru:"Удалить метку",en:"Clear marker"};
+IJARA_TRANSLATIONS["E'lonni yuborish"]={ru:"Отправить объявление",en:"Submit listing"};
+IJARA_TRANSLATIONS["Xaritada ko'rish"]={ru:"Показать на карте",en:"View on map"};
+IJARA_TRANSLATIONS["Menga yaqin"]={ru:"Рядом со мной",en:"Near me"};
+IJARA_TRANSLATIONS["Tozalash"]={ru:"Очистить",en:"Clear"};
+IJARA_TRANSLATIONS["Uylarni ko'rsatish"]={ru:"Показать жильё",en:"Show homes"};
+IJARA_TRANSLATIONS["Ko'cha, mo'ljal"]={ru:"Улица, ориентир",en:"Street, landmark"};
+IJARA_TRANSLATIONS["Uy sharoitlari haqida yozing"]={ru:"Опишите условия жилья",en:"Describe the property"};
+IJARA_TRANSLATIONS["Masalan: 2000000"]={ru:"Например: 2000000",en:"Example: 2000000"};
+IJARA_TRANSLATIONS["Tilni tanlang"]={ru:"Выберите язык",en:"Choose language"};
+IJARA_TRANSLATIONS["Sozlamalarni ochish"]={ru:"Открыть настройки",en:"Open settings"};
+IJARA_TRANSLATIONS["Asosiy menyu"]={ru:"Главное меню",en:"Main menu"};
+IJARA_TRANSLATIONS["Sayt dizayni"]={ru:"Дизайн сайта",en:"Site design"};
+IJARA_TRANSLATIONS["Yorug‘lik rejimi"]={ru:"Светлая тема",en:"Light mode"};
+IJARA_TRANSLATIONS["E'lon ma'lumotlari"]={ru:"Данные объявления",en:"Listing details"};
+IJARA_TRANSLATIONS["Ro'yxatdan o'tish"]={ru:"Регистрация",en:"Register"};
+IJARA_TRANSLATIONS["Telefon raqami"]={ru:"Номер телефона",en:"Phone number"};
+IJARA_TRANSLATIONS["Xorazm viloyati"]={ru:"Хорезмская область",en:"Khorezm Region"};
+IJARA_TRANSLATIONS["Onlayn"]={ru:"Онлайн",en:"Online"};
+IJARA_TRANSLATIONS["faollik balli"]={ru:"баллов активности",en:"activity points"};
+IJARA_TRANSLATIONS["ta"]={ru:"шт.",en:"items"};
+IJARA_TRANSLATIONS["qavat"]={ru:"этаж",en:"floor"};
+IJARA_TRANSLATIONS["1-qavat"]={ru:"1-й этаж",en:"Floor 1"};
 (function(){
  const KEY="im-ui-language";
  let language="uz";
  try { language=localStorage.getItem(KEY)||"uz"; } catch(_){}
  if(!["uz","ru","en"].includes(language))language="uz";
  const originals=new WeakMap();
- const ignored="script,style,textarea,input,[contenteditable],.detail-description,.listing-description,.detail-location-name";
- window.ijaraTranslate=(text,lang=language)=>IJARA_TRANSLATIONS[String(text||"").trim()]?.[lang]||String(text||"");
+ const ignored="script,style,textarea,input,[contenteditable],.detail-description,.listing-description,.detail-location-name,[data-no-translate],.listing-address,.listing-phone,.listing-title";
+ window.ijaraTranslate=(text,lang=language)=>{
+  const raw=String(text??""); const key=raw.trim();
+  const entry=IJARA_TRANSLATIONS[key];
+  if(entry)return lang==="uz"?key:(entry[lang]||key);
+  const floor=key.match(/^(\\d+)-qavat$/);
+  if(floor)return lang==="ru"?floor[1]+"-й этаж":lang==="en"?"Floor "+floor[1]:key;
+  const count=key.match(/^(\\d+) ta$/);
+  if(count)return lang==="ru"?count[1]+" шт.":lang==="en"?count[1]+" items":key;
+  return raw;
+ };
  window.ijaraLanguage=()=>language;
  let busy=false;
  function translateText(node){
@@ -133,23 +223,34 @@ IJARA_TRANSLATIONS["Ko'p qavatli uydagi kvartira"]={ru:"Квартира в мн
  }
  function translated(text,lang){
   const key=text.trim();
-  const value=IJARA_TRANSLATIONS[key]?.[lang];
-  if(!value)return text;
+  const value=window.ijaraTranslate(key,lang);
+  if(value===key)return text;
   return text.slice(0,text.indexOf(key))+value+text.slice(text.indexOf(key)+key.length);
  }
  function translateAttributes(root){
   if(!root || root.nodeType!==1)return;
-  const elements=[root,...root.querySelectorAll("[placeholder],[aria-label],[title]")];
+  const elements=[root,...root.querySelectorAll("[placeholder],[aria-label],[title],[alt]")];
   for(const el of elements){
-   if(el.closest(".listing-detail-layout") && el.matches("input,textarea"))continue;
-   for(const attr of ["placeholder","aria-label","title"]){
+   if(el.closest("[data-no-translate],.listing-description,.detail-description"))continue;
+   for(const attr of ["placeholder","aria-label","title","alt"]){
     if(!el.hasAttribute(attr))continue;
     const key="imOriginal"+attr.replace("-","");
     let original=el.dataset[key];
-    if(!original){original=el.getAttribute(attr);el.dataset[key]=original;}
+    if(original===undefined){original=el.getAttribute(attr);el.dataset[key]=original;}
     const translatedValue=window.ijaraTranslate(original,language);
     if(el.getAttribute(attr)!==translatedValue)el.setAttribute(attr,translatedValue);
    }
+  }
+ }
+ function translateOptions(root){
+  if(!root)return;
+  const options=root.matches?.("option")?[root]:Array.from(root.querySelectorAll?.("select option")||[]);
+  for(const option of options){
+   if(option.closest("#siteLanguage"))continue;
+   let original=option.dataset.imOriginalText;
+   if(original===undefined){original=option.textContent;option.dataset.imOriginalText=original;}
+   const translated=window.ijaraTranslate(original,language);
+   if(option.textContent!==translated)option.textContent=translated;
   }
  }
  function apply(root=document.body){
@@ -161,7 +262,9 @@ IJARA_TRANSLATIONS["Ko'p qavatli uydagi kvartira"]={ru:"Квартира в мн
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
     let node;while((node=walker.nextNode()))translateText(node);
    }
-   translateAttributes(root.nodeType===1?root:root.parentElement);
+   const base=root.nodeType===1?root:root.parentElement;
+   translateAttributes(base);
+   translateOptions(base);
    document.documentElement.lang=language;
   }finally{busy=false;}
  }

@@ -290,6 +290,7 @@ const clientId = (() => {
 
 let listings = [];
 let adminPassword = "";
+let currentAdminRole = null;
 
 function toast(message) {
   const el = $("toast");
@@ -527,7 +528,7 @@ function createCard(item, admin = false) {
 
       ${admin ? `
         <div class="listing-actions">
-          <button class="secondary-btn edit-btn">Tahrirlash</button>
+          ${currentAdminRole === "admin" ? '<button class="secondary-btn edit-btn">Tahrirlash</button>' : ""}
           <button class="primary-btn approve-btn">Tasdiqlash</button>
           <button class="danger-btn reject-btn">Rad etish</button>
           <button class="secondary-btn rented-btn">Berildi</button>
@@ -543,7 +544,7 @@ function createCard(item, admin = false) {
     card.querySelector(".save-btn").onclick =
       () => toggleSaved(item.id);
   } else {
-    card.querySelector(".edit-btn").onclick = () => editAdminListing(item);
+    if (currentAdminRole === "admin") card.querySelector(".edit-btn").onclick = () => editAdminListing(item);
     card.querySelector(".approve-btn").onclick =
       () => adminAction(item.id, "approve");
 
@@ -827,6 +828,7 @@ async function loadAdmin() {
       throw new Error("Admin javobi noto‘g‘ri");
     }
 
+    currentAdminRole = data.role;
     $("adminLogin").classList.add("hidden");
     $("adminContent").classList.remove("hidden");
 
@@ -847,6 +849,7 @@ async function loadAdmin() {
       !statusFilter || item.status === statusFilter), true);
   } catch (err) {
     adminPassword = "";
+    currentAdminRole = null;
     $("adminContent").classList.add("hidden");
     $("adminLogin").classList.remove("hidden");
     toast(err.message);

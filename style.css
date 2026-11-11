@@ -474,3 +474,41 @@ body{background:radial-gradient(circle at 85% 0%,rgba(72,150,249,.075),transpare
 .trust-item small{display:block;color:var(--muted);font-size:12px;line-height:1.5;margin-top:3px;}
 @media(max-width:720px){.trust-strip{grid-template-columns:1fr;gap:9px;margin:15px 0 22px}.trust-item{padding:12px 14px}.trust-symbol{width:38px;height:38px;flex-basis:38px}.hero-content h1{letter-spacing:-.8px}.listing-grid{gap:13px}.listing-card:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){.nav-btn,.listing-card,.listing-photo,.primary-btn,.secondary-btn,.hero-primary,.hero-secondary{transition:none!important;transform:none!important}}
+
+/* Compact, listings-first homepage */
+#home .welcome{padding:26px 30px;border-radius:24px;}
+#home .hero-content h1{font-size:clamp(26px,3.4vw,42px);margin:10px 0 12px;}
+#home .hero-content p{font-size:14px;line-height:1.55;}
+#home .hero-buttons{margin-top:18px;}
+#home .hero-buttons button{min-height:45px;}
+#home .hero-note{margin-top:15px;font-size:12px;}
+#home .hero-art{transform:scale(.82);transform-origin:center;}
+.quick-discovery{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:16px 0 8px;padding:15px 19px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 22px rgba(20,68,130,.045);}
+.quick-discovery-copy strong,.quick-discovery-copy span{display:block;}
+.quick-discovery-copy strong{font-size:16px;font-weight:800;letter-spacing:-.3px;}
+.quick-discovery-copy span{font-size:12px;color:var(--muted);margin-top:3px;}
+.quick-discovery-btn{border:0;border-radius:12px;padding:11px 16px;background:var(--light-blue);color:var(--blue);font-weight:800;white-space:nowrap;}
+.quick-discovery-btn:hover{background:#dceaff;}
+#home .trust-strip{margin:30px 0 12px;grid-template-columns:repeat(3,minmax(0,1fr));}
+#home .trust-item{padding:12px;gap:10px;}
+#home .trust-symbol{width:35px;height:35px;flex-basis:35px;font-size:20px;border-radius:11px;}
+#home .trust-item strong{font-size:12px;}
+#home .trust-item small{font-size:11px;}
+#home .section-heading{margin-top:20px;}
+@media(max-width:600px){
+ #home .welcome{padding:21px 20px 19px;border-radius:21px;}
+ #home .hero-content h1{font-size:27px;letter-spacing:-.7px;line-height:1.15;margin:9px 0;}
+ #home .hero-content p{font-size:12px;line-height:1.5;}
+ #home .hero-buttons{margin-top:14px;}
+ #home .hero-buttons button{min-height:43px;font-size:12px;}
+ #home .hero-note{margin-top:12px;font-size:11px;}
+ .quick-discovery{padding:12px 13px;margin:13px 0 4px;}
+ .quick-discovery-copy strong{font-size:13px;}
+ .quick-discovery-copy span{font-size:11px;}
+ .quick-discovery-btn{font-size:11px;padding:10px;}
+ #home .trust-strip{grid-template-columns:1fr;margin:22px 0 8px;gap:7px;}
+ #home .trust-item{padding:10px 12px;}
+ #home .trust-item small{margin-top:1px;}
+ #home .section-heading{margin-top:17px;}
+}
+@media(max-width:370px){.quick-discovery{flex-direction:column;align-items:stretch}.quick-discovery-btn{width:100%;}}

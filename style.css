@@ -824,3 +824,31 @@ html[data-mode="dark"] .listing-views .listing-icon{color:#78e3b6!important}
 #admin .page-title h1 .section-icon{color:#217eab}
 .detail-contact [data-action="call"] .section-icon{width:18px;height:18px;vertical-align:middle;color:currentColor;stroke-width:2}
 @media(max-width:600px){.page-title h1 .section-icon{width:24px;height:24px;vertical-align:-4px;margin-right:6px}}
+
+/* Admin dashboard v25: scoped to the admin page only */
+#admin .admin-dashboard{border:1px solid #dce7f6;background:linear-gradient(135deg,#fff 0%,#f4f8ff 100%);border-radius:20px;padding:22px;margin:14px 0 20px;box-shadow:0 8px 28px rgba(29,69,129,.06)}
+#admin .admin-dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+#admin .admin-dashboard-head h2{margin:0 0 4px;font-size:21px;color:#102a4c}
+#admin .admin-dashboard-head p{margin:0;color:#68809d;font-size:13px}
+#admin .admin-dashboard-tag{border-radius:99px;padding:8px 12px;background:#e9f1ff;color:#165ac2;font-weight:700;font-size:12px;white-space:nowrap}
+#admin .admin-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
+#admin .admin-metric{border:1px solid #e1eaf7;background:#fff;border-radius:15px;padding:16px 13px;display:flex;flex-direction:column;gap:10px;min-width:0}
+#admin .admin-metric[role="button"]{cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+#admin .admin-metric[role="button"]:hover,#admin .admin-metric[role="button"]:focus-visible{transform:translateY(-2px);border-color:#79a9f0;box-shadow:0 6px 18px rgba(18,94,202,.12);outline:none}
+#admin .admin-metric-label{font-size:12px;color:#627894;font-weight:650}
+#admin .admin-metric-value{font-size:29px;line-height:1;color:#0e3c78;font-weight:850;font-variant-numeric:tabular-nums}
+#admin .admin-metric-pending .admin-metric-value{color:#b77915}
+#admin .admin-metric-approved .admin-metric-value{color:#158365}
+#admin .admin-metric-rejected .admin-metric-value{color:#c34e65}
+#admin .admin-metric-rented .admin-metric-value{color:#6854b7}
+#admin .admin-quicklinks{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+#admin .admin-quicklinks a{display:inline-flex;align-items:center;gap:12px;border-radius:11px;background:#eaf2ff;color:#1356b5;padding:10px 13px;text-decoration:none;font-size:13px;font-weight:750}
+#admin .admin-quicklinks a:hover{background:#dbeaff}
+#admin #admin-listings-section,#admin #admin-reports-section,#admin #admin-audit-section{scroll-margin-top:220px}
+html[data-mode="dark"] #admin .admin-dashboard{background:linear-gradient(135deg,#18273d,#1b304a);border-color:#344a67}
+html[data-mode="dark"] #admin .admin-dashboard-head h2,html[data-mode="dark"] #admin .admin-metric-value{color:#eaf3ff}
+html[data-mode="dark"] #admin .admin-metric{background:#21334b;border-color:#3a516e}
+html[data-mode="dark"] #admin .admin-metric-label,html[data-mode="dark"] #admin .admin-dashboard-head p{color:#afc4df}
+html[data-mode="dark"] #admin .admin-quicklinks a{background:#263f60;color:#c5dcff}
+@media(max-width:800px){#admin .admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#admin .admin-dashboard-tag{display:none}}
+@media(max-width:440px){#admin .admin-dashboard{padding:15px}#admin .admin-metric{padding:13px}#admin .admin-metric-value{font-size:25px}}

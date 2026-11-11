@@ -581,3 +581,12 @@ html[data-mode="dark"] .listing-price,html[data-mode="dark"] .section-heading h2
 html[data-mode="dark"] .appearance-options button.selected,html[data-mode="dark"] .design-options button.selected{color:#b7d5ff}
 html[data-mode="dark"][data-design="classic"] .appearance-options button.selected,html[data-mode="dark"][data-design="classic"] .design-options button.selected{color:#f2c79f}
 @media(prefers-reduced-motion:reduce){.appearance-panel{transition:none}}
+
+/* Compact, accessible bookmark heart at the photo's top-right corner */
+.listing-card{position:relative}
+.listing-card>.heart-save{position:absolute;top:11px;right:11px;z-index:2;display:flex;align-items:center;justify-content:center;width:35px;height:35px;min-width:35px;min-height:35px;padding:0;border:1px solid rgba(211,223,238,.9);border-radius:50%;background:rgba(255,255,255,.96);color:#d45576;box-shadow:0 2px 10px rgba(17,43,78,.13);cursor:pointer;transition:transform .15s ease,background .15s ease}
+.listing-card>.heart-save:hover{transform:scale(1.07)}
+.listing-card>.heart-save:focus-visible{outline:3px solid #387bd9;outline-offset:2px}
+.listing-card>.heart-save .listing-icon{width:20px;height:20px;margin:0;color:inherit;fill:none;stroke:currentColor;stroke-width:1.9}
+.listing-card>.heart-save.is-saved .listing-icon{fill:currentColor}
+@media(max-width:600px){.listing-card>.heart-save{top:8px;right:8px;width:32px;height:32px;min-width:32px;min-height:32px}.listing-card>.heart-save .listing-icon{width:18px;height:18px}}

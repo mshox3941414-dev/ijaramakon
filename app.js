@@ -1168,7 +1168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("adminRefresh").onclick = loadAdmin;
   $("adminStatusFilter").onchange = loadAdmin;
-  $("adminDistrictPick").onchange = renderAdminMahallas;
+
   $("adminExcel").onclick = downloadAdminExcel;
   $("createModerator").onclick = createModeratorAccount;
 
@@ -1819,27 +1819,28 @@ function adminChart(targetId, items, key, labelKey) {
     track.appendChild(bar);row.append(label,track,number);root.appendChild(row);
   });
 }
-function renderAdminMahallas() {
-  if(!adminAnalyticsData)return;
-  const district=$("adminDistrictPick").value;
-  const items=adminAnalyticsData.mahallas.filter(item=>!district||item.district===district);
-  adminChart("adminMahallaListingsChart",items,"listings","mahalla");
-  adminChart("adminMahallaViewsChart",items,"views","mahalla");
+function adminEfficiencyChart(targetId, items, labelKey) {
+  const ranked = [...items].filter(x => Number(x.listings)>0).map(x => ({...x, averageViews:Number(x.views||0)/Number(x.listings)})).sort((a,b)=>b.averageViews-a.averageViews||b.views-a.views);
+  adminChart(targetId,ranked,"averageViews",labelKey);
 }
 async function loadAdminAnalytics() {
+  const summary=$("adminAnalyticsSummary");
   try {
     const data=await api("/api/admin/statistics",{headers:{"X-Admin-Password":adminPassword,"X-Moderator-Username":adminModeratorUsername}});
+    if(!Array.isArray(data.districts)||!Array.isArray(data.mahallas))throw new Error("Statistika ma'lumotlari noto'g'ri");
     adminAnalyticsData=data;
-    $("adminAnalyticsSummary").textContent="Jami e'lonlar: "+data.total_listings.toLocaleString("uz-UZ")+"  •  Haqiqiy ko'rishlar: "+data.total_views.toLocaleString("uz-UZ");
+    summary.textContent="Jami e'lonlar: "+Number(data.total_listings||0).toLocaleString("uz-UZ")+" • Haqiqiy ko'rishlar: "+Number(data.total_views||0).toLocaleString("uz-UZ")+" • Bir e'longa o'rtacha: "+(Number(data.total_views||0)/Math.max(1,Number(data.total_listings||0))).toFixed(1);
     adminChart("adminDistrictListingsChart",data.districts,"listings","district");
     adminChart("adminDistrictViewsChart",data.districts,"views","district");
-    const picker=$("adminDistrictPick"), selected=picker.value;
-    picker.replaceChildren();
-    const all=document.createElement("option");all.value="";all.textContent="Barcha tumanlar";picker.appendChild(all);
-    data.districts.forEach(item=>{const option=document.createElement("option");option.value=item.district;option.textContent=item.district;picker.appendChild(option);});
-    picker.value=data.districts.some(x=>x.district===selected)?selected:"";
-    renderAdminMahallas();
-  }catch(err){$("adminAnalyticsSummary").textContent="Statistika yuklanmadi: "+err.message;}
+    adminChart("adminMahallaListingsChart",data.mahallas,"listings","mahalla");
+    adminChart("adminMahallaViewsChart",data.mahallas,"views","mahalla");
+    adminEfficiencyChart("adminDistrictEfficiencyChart",data.districts,"district");
+    adminEfficiencyChart("adminMahallaEfficiencyChart",data.mahallas,"mahalla");
+  }catch(err){
+    adminAnalyticsData=null;
+    summary.textContent="Statistika yuklanmadi: "+err.message+". Server va admin ruxsatini tekshiring.";
+    ["adminDistrictListingsChart","adminDistrictViewsChart","adminMahallaListingsChart","adminMahallaViewsChart","adminDistrictEfficiencyChart","adminMahallaEfficiencyChart"].forEach(id=>$(id).replaceChildren());
+  }
 }
 async function downloadAdminExcel(){
   try{

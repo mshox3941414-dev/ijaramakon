@@ -216,6 +216,8 @@ def public_listing(item, owner=None, admin=False):
     if not admin and result["owner"] != owner:
         result.pop("owner", None)
 
+    if not admin:
+        result.pop("phone", None)
     gallery = rows("SELECT id FROM listing_gallery WHERE listing_id = ? ORDER BY id", (result["id"],))
     gallery_urls = [f"/api/listings/{result['id']}/gallery/{photo['id']}" for photo in gallery]
     result["photos"] = list(dict.fromkeys(
@@ -244,6 +246,105 @@ def api_home():
 @app.get("/health")
 def health():
     return jsonify({"ok": True})
+
+
+
+def normalize_uz_phone(value):
+    number = re.sub(r"[^0-9]", "", str(value or ""))
+    if len(number) == 9:
+        number = "998" + number
+    return "+" + number if re.fullmatch(r"998[0-9]{9}", number) else ""
+
+
+def auth_user():
+    token = request.headers.get("Authorization", "")
+    if not token.startswith("Bearer "):
+        return None
+    raw = token[7:]
+    if not re.fullmatch(r"[A-Za-z0-9_-]{32,100}", raw):
+        return None
+    matches = rows("""SELECT u.telegram_id, u.phone FROM telegram_auth_sessions s
+        JOIN telegram_auth_users u ON u.telegram_id=s.telegram_id
+        WHERE s.token_hash=? AND s.expires_at>?""",
+        (hashlib.sha256(raw.encode()).hexdigest(), int(time.time())))
+    return matches[0] if matches else None
+
+
+@app.post("/api/auth/telegram/start")
+def telegram_auth_start():
+    payload = request.get_json(silent=True) or {}
+    phone = normalize_uz_phone(payload.get("phone"))
+    if not phone:
+        return error("O'zbekiston telefon raqamini kiriting")
+    now = int(time.time())
+    challenge = secrets.token_urlsafe(24)
+    challenge_hash = hashlib.sha256(challenge.encode()).hexdigest()
+    with db_lock, connect() as db:
+        db.execute("DELETE FROM telegram_auth_challenges WHERE expires_at < ?", (now,))
+        # Avoid unbounded challenges for one number; existing challenge may be renewed.
+        db.execute("DELETE FROM telegram_auth_challenges WHERE phone = ?", (phone,))
+        db.execute("""INSERT INTO telegram_auth_challenges
+            (challenge_hash, phone, expires_at, attempts)
+            VALUES (?, ?, ?, 0)""", (challenge_hash, phone, now + 600))
+        db.commit()
+    return jsonify({"challenge": challenge, "bot_url": "https://t.me/IjaraMakonBot?start=login_" + challenge,
+                    "expires_in": 600})
+
+
+@app.post("/api/auth/telegram/verify")
+def telegram_auth_verify():
+    payload = request.get_json(silent=True) or {}
+    challenge = str(payload.get("challenge", ""))
+    code = str(payload.get("code", "")).strip()
+    if not re.fullmatch(r"[A-Za-z0-9_-]{24,100}", challenge) or not re.fullmatch(r"[0-9]{6}", code):
+        return error("Tasdiqlash kodi noto'g'ri", 400)
+    key = hashlib.sha256(challenge.encode()).hexdigest()
+    with db_lock, connect() as db:
+        row = db.execute("SELECT * FROM telegram_auth_challenges WHERE challenge_hash=?", (key,)).fetchone()
+        if not row or int(row["expires_at"]) < int(time.time()) or row["verified"] != 1 or row["attempts"] >= 5:
+            return error("Tasdiqlash tugamagan yoki muddati o'tgan", 403)
+        db.execute("UPDATE telegram_auth_challenges SET attempts=attempts+1 WHERE challenge_hash=?", (key,))
+        if not row["code_hash"] or not hmac.compare_digest(row["code_hash"], hashlib.sha256((challenge + ":" + code).encode()).hexdigest()):
+            db.commit()
+            return error("Kod noto'g'ri", 403)
+        telegram_id = row["telegram_id"]
+        db.execute("DELETE FROM telegram_auth_users WHERE phone=? AND telegram_id<>?", (row["phone"], telegram_id))
+        db.execute("""INSERT INTO telegram_auth_users (telegram_id,phone,created_at)
+            VALUES (?,?,?) ON CONFLICT (telegram_id) DO UPDATE SET phone=excluded.phone""",
+            (telegram_id, row["phone"], datetime.now(timezone.utc).isoformat()))
+        token = secrets.token_urlsafe(36)
+        db.execute("INSERT INTO telegram_auth_sessions (token_hash,telegram_id,expires_at) VALUES (?,?,?)",
+                   (hashlib.sha256(token.encode()).hexdigest(), telegram_id, int(time.time()) + 30*86400))
+        db.execute("DELETE FROM telegram_auth_challenges WHERE challenge_hash=?", (key,))
+        db.commit()
+    return jsonify({"token": token, "phone": row["phone"], "expires_in": 30*86400})
+
+
+@app.get("/api/auth/me")
+def telegram_auth_me():
+    user = auth_user()
+    return jsonify({"authenticated": bool(user), "phone": user["phone"] if user else None})
+
+
+@app.post("/api/auth/logout")
+def telegram_auth_logout():
+    token = request.headers.get("Authorization", "")
+    if token.startswith("Bearer "):
+        with db_lock, connect() as db:
+            db.execute("DELETE FROM telegram_auth_sessions WHERE token_hash=?",
+                       (hashlib.sha256(token[7:].encode()).hexdigest(),))
+            db.commit()
+    return jsonify({"ok": True})
+
+
+@app.get("/api/listings/<int:listing_id>/contact")
+def listing_contact(listing_id):
+    if not auth_user():
+        return error("Uy egasi bilan bog'lanish uchun avval Telegram orqali kiring", 401)
+    matches = rows("SELECT phone FROM houses WHERE id=? AND status='approved'", (listing_id,))
+    if not matches:
+        return error("E'lon topilmadi", 404)
+    return jsonify({"phone": matches[0]["phone"]})
 
 
 @app.get("/api/listings")

@@ -515,7 +515,7 @@ function createCard(item, admin = false) {
       <div class="listing-price">
         ${money(item.price)} so'm/oy
       </div>
-      <div class="listing-views">${listingIcon("eye")} <span data-view-count="${item.id}">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</div>
+      <div class="listing-views">${listingIcon("eye")} <span data-view-count="${item.id}">${(Number(item.view_count || 0) * 10).toLocaleString("uz-UZ")}</span> faollik balli</div>
       <span class="status ${escapeHTML(item.status)}">
         ${statusLabel(item.status)}
       </span>
@@ -665,7 +665,7 @@ async function showDetail(item) {
       <div class="detail-heading"><span class="detail-chip">Ijara</span><span class="detail-chip">${escapeHTML(item.type)}</span></div>
       <h2>${escapeHTML(item.type)} — ${escapeHTML(item.mahalla)}</h2>
       <div class="detail-main-price">${money(item.price)} so'm <span>/ oy</span></div>
-      <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</p>
+      <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${(Number(item.view_count || 0) * 10).toLocaleString("uz-UZ")}</span> faollik balli</p>
       <div class="detail-contact">
         <button type="button" class="primary-btn detail-contact-action" data-action="call">📞 Qo'ng'iroq qilish</button>
         <button type="button" class="detail-sms-btn detail-contact-action" data-action="sms">✉ SMS yozish</button>

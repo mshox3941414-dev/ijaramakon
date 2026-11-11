@@ -53,6 +53,11 @@ IJARA_TRANSLATIONS["SMS yozish"]={ru:"Написать SMS",en:"Send SMS"};
 IJARA_TRANSLATIONS["Joylashuv"]={ru:"Расположение",en:"Location"};
 IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
 IJARA_TRANSLATIONS["Batafsil"]={ru:"Подробнее",en:"Details"};
+IJARA_TRANSLATIONS["Kvartira qavati"]={ru:"Этаж квартиры",en:"Apartment floor"};
+IJARA_TRANSLATIONS["Kvartira qavati *"]={ru:"Этаж квартиры *",en:"Apartment floor *"};
+IJARA_TRANSLATIONS["Barcha qavatlar"]={ru:"Все этажи",en:"All floors"};
+IJARA_TRANSLATIONS["Qavatni tanlang"]={ru:"Выберите этаж",en:"Select floor"};
+IJARA_TRANSLATIONS["Shikoyat"]={ru:"Пожаловаться",en:"Report"};
 (function(){
  const KEY="im-ui-language";
  let language="uz";

@@ -52,5 +52,43 @@ class LocationApiTests(unittest.TestCase):
             columns = {row["name"] for row in db.execute("PRAGMA table_info(houses)")}
         self.assertTrue({"latitude", "longitude"}.issubset(columns))
 
+class AdminApiTests(unittest.TestCase):
+    def setUp(self):
+        self.client = server.app.test_client()
+        server.ADMIN_PASSWORD = "test-admin-secret"
+        server.MODERATOR_PASSWORD = "test-moderator-secret"
+        self.admin = {"X-Admin-Password": server.ADMIN_PASSWORD}
+        self.moderator = {"X-Admin-Password": server.MODERATOR_PASSWORD}
+        self.data = dict(owner="report-test", district="Urganch shahri",
+                         mahalla="Test mahalla", type="Kvartira", rooms="2",
+                         repair="Yaxshi", price="1000000",
+                         phone="+998901234567", address="Test kocha")
+        created = self.client.post("/api/listings", data=self.data)
+        self.assertEqual(created.status_code, 201)
+        self.listing_id = created.get_json()["id"]
+
+    def test_admin_auth_and_roles(self):
+        self.assertEqual(self.client.get("/api/admin/overview").status_code, 403)
+        self.assertEqual(self.client.get("/api/admin/listings", headers=self.admin).get_json()["role"], "admin")
+        self.assertEqual(self.client.get("/api/admin/listings", headers=self.moderator).get_json()["role"], "moderator")
+
+    def test_moderator_cannot_edit_but_admin_can(self):
+        url = "/api/admin/listings/" + str(self.listing_id)
+        self.assertEqual(self.client.patch(url, headers=self.moderator, json={"price": 2000000}).status_code, 403)
+        self.assertEqual(self.client.patch(url, headers=self.admin, json={"price": 2000000}).status_code, 200)
+        overview = self.client.get("/api/admin/overview", headers=self.admin).get_json()
+        self.assertTrue(any(a["action"] == "edit" and a["listing_id"] == self.listing_id for a in overview["audit"]))
+
+    def test_report_and_resolve(self):
+        url = "/api/admin/listings/" + str(self.listing_id) + "/approve"
+        self.assertEqual(self.client.post(url, headers=self.moderator).status_code, 200)
+        report = self.client.post("/api/listings/" + str(self.listing_id) + "/report",
+                                  json={"reason": "E'lon ma'lumotlari noto'g'ri"})
+        self.assertEqual(report.status_code, 201)
+        reports = self.client.get("/api/admin/overview", headers=self.admin).get_json()["reports"]
+        self.assertEqual(self.client.post("/api/admin/reports/" + str(reports[0]["id"]) + "/resolve",
+                                          headers=self.moderator).status_code, 200)
+
+
 if __name__ == "__main__":
     unittest.main()

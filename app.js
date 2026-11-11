@@ -669,7 +669,7 @@ async function showDetail(item) {
       <div class="detail-contact">
         <button type="button" class="primary-btn detail-contact-action" data-action="call">📞 Qo'ng'iroq qilish</button>
         <button type="button" class="detail-sms-btn detail-contact-action" data-action="sms">✉ SMS yozish</button>
-        <span class="detail-phone" id="verifiedContactPhone"></span>
+        <span class="detail-phone" id="verifiedContactPhone">${escapeHTML(item.phone || "")}</span>
       </div>
       <h3>Uy haqida ma'lumot</h3>
       <dl class="detail-facts">
@@ -705,15 +705,8 @@ async function showDetail(item) {
 
   wrapper.querySelectorAll(".detail-contact-action").forEach(button => {
     button.onclick = async () => {
-      const token = readStorage("im_auth_token");
-      if (!token) {
-        openPhoneLogin();
-        return;
-      }
       try {
-        const data = await api("/api/listings/" + encodeURIComponent(item.id) + "/contact", {
-          headers: {Authorization: "Bearer " + token}
-        });
+        const data = await api("/api/listings/" + encodeURIComponent(item.id) + "/contact");
         const number = String(data.phone || "").replace(/[^+0-9]/g, "");
         if (!phoneURL(number)) throw new Error("Telefon raqami mavjud emas");
         $("verifiedContactPhone").textContent = number;
@@ -722,11 +715,8 @@ async function showDetail(item) {
         } else {
           window.location.href = "sms:" + number + "?body=" + encodeURIComponent(smsMessage);
         }
-      } catch(err) {
-        if (/avval Telegram|401|ruxsat/i.test(err.message)) {
-          localStorage.removeItem("im_auth_token");
-          openPhoneLogin();
-        } else toast(err.message);
+      } catch (err) {
+        toast(err.message);
       }
     };
   });

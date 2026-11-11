@@ -936,6 +936,7 @@ async function loadAdmin() {
     }
 
     currentAdminRole = data.role;
+    $("adminPassword").value = "";
     $("adminLogin").classList.add("hidden");
     $("adminContent").classList.remove("hidden");
 
@@ -956,6 +957,7 @@ async function loadAdmin() {
       !statusFilter || item.status === statusFilter), true);
   } catch (err) {
     adminPassword = "";
+    $("adminPassword").value = "";
     currentAdminRole = null;
     $("adminContent").classList.add("hidden");
     $("adminLogin").classList.remove("hidden");
@@ -1122,6 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   $("adminLoginButton").onclick = () => {
     adminPassword = $("adminPassword").value;
+    $("adminPassword").value = "";
 
     if (adminPassword) {
       loadAdmin();

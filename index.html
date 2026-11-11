@@ -200,6 +200,9 @@
           <button id="adminRefresh" class="secondary-btn">🔄 Yangilash</button>
           <button id="adminLogout" class="secondary-btn">Chiqish</button>
         </div>
+        <div class="panel" id="adminStats" aria-live="polite"></div>
+        <div class="field"><label for="adminStatusFilter">Barcha e'lonlarni holati bo'yicha saralash</label>
+          <select id="adminStatusFilter"><option value="">Barcha holatlar</option><option value="pending">Kutilmoqda</option><option value="approved">Tasdiqlangan</option><option value="rejected">Rad etilgan</option><option value="rented">Ijaraga berilgan</option></select></div>
         <div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>
         <div id="pendingListings" class="listing-grid"></div>
         <div class="section-heading"><h2>Barcha e'lonlar</h2></div>

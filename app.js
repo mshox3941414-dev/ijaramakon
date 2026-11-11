@@ -1582,3 +1582,56 @@ async function loadAdminOverview() {
     audit.appendChild(row);
   });
 }
+
+/* Appearance settings: three layouts + day/night/auto, stored locally. */
+(function initAppearanceSettings() {
+  const allowedModes = ["light","dark","auto"];
+  const allowedDesigns = ["modern","minimal","classic"];
+  const read = (key,fallback) => { try { return localStorage.getItem(key) || fallback; } catch { return fallback; } };
+  const save = (key,value) => { try { localStorage.setItem(key,value); } catch {} };
+  let mode = read("im-color-mode","light");
+  let design = read("im-design","modern");
+  if (!allowedModes.includes(mode)) mode="light";
+  if (!allowedDesigns.includes(design)) design="modern";
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
+  function apply() {
+    const actual = mode === "auto" ? (prefersDark.matches ? "dark":"light") : mode;
+    document.documentElement.dataset.mode = actual;
+    document.documentElement.dataset.design = design;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content",actual==="dark"?"#101b2d":"#ffffff");
+    document.querySelectorAll("[data-color-mode]").forEach(b => { const active=b.dataset.colorMode===mode; b.classList.toggle("selected",active); b.setAttribute("aria-pressed",String(active)); });
+    document.querySelectorAll("[data-design]").forEach(b => { const active=b.dataset.design===design; b.classList.toggle("selected",active); b.setAttribute("aria-pressed",String(active)); });
+  }
+  function setup() {
+    const panel=document.getElementById("appearancePanel"),backdrop=document.getElementById("settingsBackdrop"),toggle=document.getElementById("settingsToggle"),close=document.getElementById("settingsClose");
+    if(!panel||!toggle||!backdrop||!close) return;
+    let previousFocus=null;
+    const setOpen=open => {
+      if(open) previousFocus=document.activeElement;
+      panel.classList.toggle("open",open);
+      panel.setAttribute("aria-hidden",String(!open));
+      backdrop.classList.toggle("hidden",!open);
+      toggle.setAttribute("aria-expanded",String(open));
+      document.body.classList.toggle("settings-open",open);
+      if(open) close.focus(); else if(previousFocus) previousFocus.focus();
+    };
+    toggle.addEventListener("click",()=>setOpen(!panel.classList.contains("open")));
+    close.addEventListener("click",()=>setOpen(false));
+    backdrop.addEventListener("click",()=>setOpen(false));
+    document.addEventListener("keydown",event=>{
+      if(event.key==="Escape" && panel.classList.contains("open")) setOpen(false);
+      if(event.key==="Tab" && panel.classList.contains("open")){
+        const controls=[...panel.querySelectorAll("button")];
+        if(event.shiftKey && document.activeElement===controls[0]){event.preventDefault();controls[controls.length-1].focus();}
+        else if(!event.shiftKey && document.activeElement===controls[controls.length-1]){event.preventDefault();controls[0].focus();}
+      }
+    });
+    panel.querySelectorAll("[data-color-mode]").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.colorMode;save("im-color-mode",mode);apply();}));
+    panel.querySelectorAll("[data-design]").forEach(b=>b.addEventListener("click",()=>{design=b.dataset.design;save("im-design",design);apply();}));
+    apply();
+  }
+  if(prefersDark.addEventListener) prefersDark.addEventListener("change",()=>{if(mode==="auto")apply();});
+  else if(prefersDark.addListener) prefersDark.addListener(()=>{if(mode==="auto")apply();});
+  apply();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup();
+})();

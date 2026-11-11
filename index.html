@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=20261111-lang11">
+  <link rel="stylesheet" href="./style.css?v=20261111-header12">
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-  <script src="./app.js?v=20261111-lang11" defer></script><script src="./i18n.js?v=20261111-lang11" defer></script>
+  <script src="./app.js?v=20261111-header12" defer></script><script src="./i18n.js?v=20261111-header12" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
   <style>
@@ -81,7 +81,10 @@ document.addEventListener("DOMContentLoaded", function initTelegramViewport() {
   </script>
 </head>
 <body>
-  <header class="header">
+  <div class="top-utility-bar" aria-label="IjaraMakon aloqa va ijtimoiy tarmoqlar">
+  <div class="top-utility-inner"><a class="top-support" href="tel:+998886006300">☎ <span>Yordam: +998 88 600 63 00</span></a><span class="top-utility-caption">Xorazm bo‘ylab ijara xizmatlari</span><div class="top-socials" aria-label="Ijtimoiy tarmoqlar (tez kunda)"><span title="Facebook — tez kunda" aria-label="Facebook — tez kunda">f</span><span title="Instagram — tez kunda" aria-label="Instagram — tez kunda">◎</span><span title="Telegram — tez kunda" aria-label="Telegram — tez kunda">✈</span><span title="YouTube — tez kunda" aria-label="YouTube — tez kunda">▶</span></div></div>
+</div>
+<header class="header">
     <div class="brand">
       <span class="brand-icon">🏠</span>
       <div>
@@ -89,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function initTelegramViewport() {
         <small>Xorazm bo'ylab ijara uylari</small>
       </div>
     </div>
-    <div class="header-actions"><button id="headerTour" class="header-tour-btn" type="button" aria-label="Saytdan foydalanishni o‘rganish" title="Saytdan foydalanishni o‘rganish">❔ <span>Yo‘riqnoma</span></button><label class="header-lang-wrap"><span class="visually-hidden">Tilni tanlang</span><select id="siteLanguage" class="header-lang" aria-label="Tilni tanlang"><option value="uz">UZ · O‘zbek</option><option value="ru">RU · Русский</option><option value="en">ENG · English</option></select></label><button id="settingsToggle" class="settings-toggle" type="button" aria-label="Sozlamalarni ochish" aria-controls="appearancePanel" aria-expanded="false" title="Sozlamalar"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span class="location-pill">📍 Xorazm viloyati</span><span class="header-status">● Onlayn</span><button class="admin-shortcut" type="button" data-page="admin" aria-label="Admin panel" title="Admin panel">🛡️</button></div>
+    <div class="header-actions"><button id="headerTour" class="header-tour-btn" type="button" aria-label="Saytdan foydalanishni o‘rganish" title="Saytdan foydalanishni o‘rganish"><span class="header-action-icon">?</span> <span>Yo‘riqnoma</span></button><label class="header-lang-wrap"><span class="visually-hidden">Tilni tanlang</span><select id="siteLanguage" class="header-lang" aria-label="Tilni tanlang"><option value="uz">🇺🇿 UZ · O‘zbek</option><option value="ru">🇷🇺 RU · Русский</option><option value="en">🇬🇧 ENG · English</option></select></label><button id="settingsToggle" class="settings-toggle" type="button" aria-label="Sozlamalarni ochish" aria-controls="appearancePanel" aria-expanded="false" title="Sozlamalar"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span class="location-pill">📍 Xorazm viloyati</span><span class="header-status">● Onlayn</span><button class="admin-shortcut" type="button" data-page="admin" aria-label="Admin panel" title="Admin panel">🛡️</button></div>
   </header>
 
   <div id="settingsBackdrop" class="settings-backdrop hidden"></div>

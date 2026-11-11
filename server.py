@@ -161,10 +161,19 @@ def public_listing(item, owner=None, admin=False):
 
 @app.get("/")
 def home():
-    return jsonify({
-        "service": "IjaraMakon API",
-        "status": "working"
-    })
+    return send_from_directory(str(Path(__file__).resolve().parent), "index.html")
+
+
+@app.get("/style.css")
+@app.get("/app.js")
+@app.get("/mahallalar.js")
+def frontend_assets():
+    return send_from_directory(str(Path(__file__).resolve().parent), request.path.lstrip("/"))
+
+
+@app.get("/api")
+def api_home():
+    return jsonify({"service": "IjaraMakon API", "status": "working"})
 
 
 @app.get("/health")

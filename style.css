@@ -648,3 +648,18 @@ body.phone-login-open{overflow:hidden}
 #phoneLoginCode{letter-spacing:.35em;text-align:center;font-size:25px!important}
 #phoneLoginMessage{margin:12px 0 0;color:var(--text);font-weight:600}
 #phoneLoginMessage:empty{display:none}
+
+/* Support link and first-visit guided tour */
+.support-phone{display:block;margin:12px 0;font-weight:700;color:var(--blue,#2563eb);font-size:17px;text-decoration:none}
+.tour-restart{display:block;width:100%;padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;background:transparent;color:inherit;cursor:pointer}
+.tour-layer{position:fixed;inset:0;z-index:100000;pointer-events:auto}
+.tour-layer.hidden{display:none}
+.tour-spot{position:fixed;border:3px solid #fff;border-radius:13px;box-shadow:0 0 0 9999px rgba(7,19,36,.73);pointer-events:none;z-index:1}
+.tour-tip{position:fixed;z-index:2;box-sizing:border-box;width:min(340px,calc(100vw - 16px));padding:18px;background:#fff;color:#17233a;border-radius:15px;box-shadow:0 12px 36px #0005;line-height:1.5}
+.tour-tip strong{font-size:18px}
+.tour-tip p{margin:9px 0 15px;font-size:14px}
+.tour-progress{color:#64748b;font-size:12px;margin-bottom:7px}
+.tour-actions{display:flex;justify-content:space-between;gap:10px}
+.tour-actions button{padding:10px 13px;border:0;border-radius:9px;cursor:pointer}
+#tourSkip{background:#e9edf3;color:#334155}
+#tourNext{background:#2563eb;color:white;font-weight:700}

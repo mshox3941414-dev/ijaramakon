@@ -530,3 +530,8 @@ body{background:radial-gradient(circle at 85% 0%,rgba(72,150,249,.075),transpare
  #home .welcome{background-image:linear-gradient(90deg,rgba(8,35,80,.91),rgba(12,55,109,.69)),url("https://commons.wikimedia.org/wiki/Special:FilePath/Khiva_Itchan_Kala.JPG?width=960");background-position:center,58% center;padding-bottom:31px;}
  #home .hero-photo-credit{right:14px;bottom:7px;max-width:95%;font-size:8px;}
 }
+
+/* Listing view count */
+.listing-views{display:flex;align-items:center;gap:4px;color:#74859a;font-size:12px;margin:7px 0 10px;line-height:1.4}
+.listing-views .listing-icon{width:15px;height:15px;color:#6b8eb9;margin-right:2px}
+@media(max-width:600px){.listing-views{font-size:10px;margin:6px 0 8px}}

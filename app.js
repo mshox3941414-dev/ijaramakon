@@ -1932,3 +1932,17 @@ document.addEventListener("DOMContentLoaded", () => {
       else localStorage.removeItem("im_auth_token");
     }).catch(()=>{});
 });
+
+/* Keep the custom image picker in sync without changing upload handling. */
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("addImage");
+  const status = document.getElementById("addImageFileStatus");
+  if (!input || !status) return;
+  const update = () => {
+    const count = input.files?.length || 0;
+    status.textContent = count ? count === 1 ? input.files[0].name : count + " та расм танланди" : "Расм танланмаган";
+  };
+  input.addEventListener("change", update);
+  document.getElementById("listingForm")?.addEventListener("reset", () => queueMicrotask(update));
+  update();
+});

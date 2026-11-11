@@ -290,6 +290,7 @@ const clientId = (() => {
 
 let listings = [];
 let adminPassword = "";
+let currentAdminRole = null;
 
 function toast(message) {
   const el = $("toast");
@@ -518,6 +519,7 @@ function createCard(item, admin = false) {
       <div class="listing-actions">
         <button class="primary-btn view-btn">Batafsil</button>
         ${!admin ? `
+          <button class="secondary-btn report-btn">Shikoyat</button>
           <button class="secondary-btn save-btn">
             ${listingIcon("heart")} ${saved ? "Saqlangan" : "Saqlash"}
           </button>
@@ -526,10 +528,10 @@ function createCard(item, admin = false) {
 
       ${admin ? `
         <div class="listing-actions">
+          ${currentAdminRole === "admin" ? '<button class="secondary-btn edit-btn">Tahrirlash</button>' : ""}
           <button class="primary-btn approve-btn">Tasdiqlash</button>
           <button class="danger-btn reject-btn">Rad etish</button>
           <button class="secondary-btn rented-btn">Berildi</button>
-          <button class="danger-btn delete-btn">O'chirish</button>
         </div>
       ` : ""}
     </div>
@@ -538,9 +540,11 @@ function createCard(item, admin = false) {
   card.querySelector(".view-btn").onclick = () => showDetail(item);
 
   if (!admin) {
+    card.querySelector(".report-btn").onclick = () => reportListing(item.id);
     card.querySelector(".save-btn").onclick =
       () => toggleSaved(item.id);
   } else {
+    if (currentAdminRole === "admin") card.querySelector(".edit-btn").onclick = () => editAdminListing(item);
     card.querySelector(".approve-btn").onclick =
       () => adminAction(item.id, "approve");
 
@@ -550,11 +554,6 @@ function createCard(item, admin = false) {
     card.querySelector(".rented-btn").onclick =
       () => adminAction(item.id, "rented");
 
-    card.querySelector(".delete-btn").onclick = () => {
-      if (confirm("E'lon o'chirilsinmi?")) {
-        adminAction(item.id, "delete");
-      }
-    };
   }
 
   return card;
@@ -592,7 +591,7 @@ function renderSearch() {
   const repair = $("searchRepair").value;
   const max = Number($("searchMaxPrice").value || 0);
 
-  const filtered = listings.filter(item =>
+  let filtered = listings.filter(item =>
     item.status === "approved" &&
     (!district || item.district === district) &&
     (!mahalla || item.mahalla === mahalla) &&
@@ -609,8 +608,17 @@ function renderSearch() {
     (!max || Number(item.price) <= max)
   );
 
-  $("resultCount").textContent = filtered.length + " ta";
+  if (nearbyLocation) {
+    const validDistance = item => item.latitude != null && item.longitude != null &&
+      Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
+    filtered = filtered.filter(validDistance).sort((a,b) =>
+      distanceKm(nearbyLocation.lat,nearbyLocation.lng,Number(a.latitude),Number(a.longitude)) -
+      distanceKm(nearbyLocation.lat,nearbyLocation.lng,Number(b.latitude),Number(b.longitude))
+    );
+  }
+    $("resultCount").textContent = filtered.length + " ta";
   renderCards("searchResults", filtered);
+  renderMapListings(filtered);
 }
 
 function renderSaved() {
@@ -738,7 +746,9 @@ async function submitListing(event) {
     phone: $("addPhone").value.trim(),
     address: $("addAddress").value.trim(),
     description: $("addDescription").value.trim(),
-    owner: clientId
+    owner: clientId,
+    latitude: selectedLocation?.lat ?? "",
+    longitude: selectedLocation?.lng ?? ""
   };
 
   Object.entries(fields).forEach(([key, value]) => {
@@ -771,6 +781,9 @@ async function submitListing(event) {
 
     toast("E'lon adminga yuborildi!");
     event.target.reset();
+    selectedLocation = null;
+    if (addMarker && addMap) { addMap.removeLayer(addMarker); addMarker = null; }
+    $("locationStatus").textContent = "Joylashuv belgilanmagan";
     updateMahalla("add");
 
     await loadListings();
@@ -815,6 +828,7 @@ async function loadAdmin() {
       throw new Error("Admin javobi noto‘g‘ri");
     }
 
+    currentAdminRole = data.role;
     $("adminLogin").classList.add("hidden");
     $("adminContent").classList.remove("hidden");
 
@@ -824,9 +838,18 @@ async function loadAdmin() {
       true
     );
 
-    renderCards("adminListings", data.listings, true);
+    await loadAdminOverview();
+    const counts = Object.fromEntries(["pending","approved","rejected","rented"].map(status =>
+      [status,data.listings.filter(item => item.status === status).length]));
+    $("adminStats").textContent = "Jami: " + data.listings.length +
+      " | Kutilmoqda: " + counts.pending + " | Tasdiqlangan: " + counts.approved +
+      " | Rad etilgan: " + counts.rejected + " | Ijaraga berilgan: " + counts.rented;
+    const statusFilter = $("adminStatusFilter").value;
+    renderCards("adminListings", data.listings.filter(item =>
+      !statusFilter || item.status === statusFilter), true);
   } catch (err) {
     adminPassword = "";
+    currentAdminRole = null;
     $("adminContent").classList.add("hidden");
     $("adminLogin").classList.remove("hidden");
     toast(err.message);
@@ -915,6 +938,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   $("adminRefresh").onclick = loadAdmin;
+  $("adminStatusFilter").onchange = loadAdmin;
 
   $("adminLogout").onclick = () => {
     adminPassword = "";
@@ -1357,3 +1381,161 @@ document.addEventListener("DOMContentLoaded", () => {
     initPickers();
   }
 })();
+/* Optional maps: only listings with user-supplied coordinates are pinned. */
+let selectedLocation = null;
+let nearbyLocation = null;
+function distanceKm(lat1,lon1,lat2,lon2) {
+  const r = Math.PI / 180, dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+let addMap, addMarker, searchMap, searchMarkers;
+function mapReady() { return typeof L !== "undefined"; }
+function makeMap(id) {
+  const map = L.map(id).setView([41.55, 60.62], 9);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  return map;
+}
+function setSelectedLocation(lat, lng) {
+  selectedLocation = {lat, lng};
+  if (!addMarker) addMarker = L.marker([lat,lng]).addTo(addMap);
+  else addMarker.setLatLng([lat,lng]);
+  addMap.setView([lat,lng], Math.max(addMap.getZoom(), 14));
+  $("locationStatus").textContent = "📍 Tanlangan nuqta: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+}
+function renderMapListings(items) {
+  if (!searchMap || !searchMarkers) return;
+  searchMarkers.clearLayers();
+  const bounds = [];
+  items.forEach(item => {
+    const lat = Number(item.latitude), lng = Number(item.longitude);
+    if (item.latitude == null || item.longitude == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const marker = L.marker([lat,lng]).addTo(searchMarkers);
+    const title = document.createElement("div");
+    title.textContent = (item.type || "Uy") + " · " + money(item.price) + " so'm/oy";
+    marker.bindPopup(title);
+    marker.on("click", () => showDetail(item));
+    bounds.push([lat,lng]);
+  });
+  if (bounds.length) searchMap.fitBounds(bounds, {padding:[25,25],maxZoom:13});
+}
+function initLocationMaps() {
+  $("pickLocation").onclick = () => {
+    if (!mapReady()) return toast("Xarita yuklanmadi. Internetni tekshiring.");
+    $("addMapWrap").classList.remove("hidden");
+    if (!addMap) {
+      addMap = makeMap("addMap");
+      addMap.on("click", e => setSelectedLocation(e.latlng.lat,e.latlng.lng));
+    }
+    setTimeout(() => addMap.invalidateSize(), 50);
+  };
+  $("useMyLocation").onclick = () => {
+    if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
+    if (!mapReady()) return toast("Xarita yuklanmadi");
+    navigator.geolocation.getCurrentPosition(pos => {
+      $("pickLocation").click();
+      setSelectedLocation(pos.coords.latitude,pos.coords.longitude);
+    }, () => toast("GPS ruxsati berilmadi yoki joylashuv topilmadi"), {enableHighAccuracy:false,timeout:12000});
+  };
+  $("clearLocation").onclick = () => {
+    selectedLocation = null;
+    if (addMarker && addMap) {addMap.removeLayer(addMarker);addMarker=null;}
+    $("locationStatus").textContent = "Joylashuv belgilanmagan";
+  };
+  $("toggleMap").onclick = () => {
+    if (!mapReady()) return toast("Xarita yuklanmadi. Internetni tekshiring.");
+    const wrap = $("searchMapWrap");
+    wrap.classList.toggle("hidden");
+    if (!wrap.classList.contains("hidden")) {
+      if (!searchMap) {searchMap=makeMap("searchMap");searchMarkers=L.layerGroup().addTo(searchMap);}
+      setTimeout(() => {searchMap.invalidateSize();renderSearch();},50);
+    }
+  };
+  $("clearNearMe").onclick = () => {
+    nearbyLocation = null;
+    $("clearNearMe").classList.add("hidden");
+    renderSearch();
+  };
+  $("nearMe").onclick = () => {
+    if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
+    navigator.geolocation.getCurrentPosition(pos => {
+      nearbyLocation = {lat:pos.coords.latitude,lng:pos.coords.longitude};
+      $("clearNearMe").classList.remove("hidden");
+      renderSearch();
+      if ($("searchMapWrap").classList.contains("hidden")) $("toggleMap").click();
+      if (searchMap) { setTimeout(() => searchMap.setView([pos.coords.latitude,pos.coords.longitude],12), 120); }
+    }, () => toast("GPS ruxsati berilmadi"),{timeout:12000});
+  };
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",initLocationMaps);
+else initLocationMaps();
+
+async function reportListing(id) {
+  const reason = prompt("Shikoyat sababini yozing (kamida 10 belgi):");
+  if (reason === null) return;
+  try {
+    await api("/api/listings/" + encodeURIComponent(id) + "/report", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({reason})
+    });
+    toast("Shikoyat qabul qilindi");
+  } catch (err) { toast(err.message); }
+}
+
+async function editAdminListing(item) {
+  const fields = ["district","mahalla","type","rooms","repair","price","phone","address","description"];
+  const changes = {};
+  for (const key of fields) {
+    const value = prompt(key + ":", String(item[key] ?? ""));
+    if (value === null) return;
+    if (value !== String(item[key] ?? "")) changes[key] = value;
+  }
+  if (!Object.keys(changes).length) return;
+  try {
+    await api("/api/admin/listings/" + encodeURIComponent(item.id), {
+      method: "PATCH", headers: {"Content-Type": "application/json","X-Admin-Password":adminPassword},
+      body: JSON.stringify(changes)
+    });
+    toast("E'lon yangilandi");
+    await loadAdmin();
+    await loadListings();
+  } catch (err) { toast(err.message); }
+}
+
+async function loadAdminOverview() {
+  const data = await api("/api/admin/overview", {headers:{"X-Admin-Password":adminPassword}});
+  const reports = $("adminReports");
+  reports.replaceChildren();
+  if (!data.reports.length) reports.textContent = "Shikoyatlar yo'q";
+  data.reports.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "button-row";
+    const label = document.createElement("span");
+    label.textContent = "#" + item.listing_id + " — " + item.reason + " (" + item.status + ")";
+    row.appendChild(label);
+    if (item.status === "open") {
+      const btn = document.createElement("button");
+      btn.className = "secondary-btn";
+      btn.textContent = "Ko'rib chiqildi";
+      btn.onclick = async () => {
+        try {
+          await api("/api/admin/reports/" + item.id + "/resolve", {method:"POST",headers:{"X-Admin-Password":adminPassword}});
+          await loadAdmin();
+        } catch(err) {toast(err.message);}
+      };
+      row.appendChild(btn);
+    }
+    reports.appendChild(row);
+  });
+  const audit = $("adminAudit");
+  audit.replaceChildren();
+  if (!data.audit) audit.textContent = "Harakatlar tarixi faqat bosh adminga ko'rinadi";
+  else if (!data.audit.length) audit.textContent = "Hali harakatlar yo'q";
+  else data.audit.forEach(item => {
+    const row = document.createElement("p");
+    row.textContent = item.created_at + " — " + item.actor + " — " + item.action + " #" + (item.listing_id ?? "");
+    audit.appendChild(row);
+  });
+}

@@ -6,8 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>IjaraMakon — Xorazm</title>
-  <link rel="stylesheet" href="./style.css?v=13">
-  <script src="./app.js?v=20261111-icons2" defer></script>
+  <link rel="stylesheet" href="./style.css?v=14">
+  <script src="./app.js?v=20261111-map1" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 </head>
 <body>
   <header class="header">
@@ -93,6 +95,8 @@
         <h2>Topilgan e'lonlar</h2>
         <span id="resultCount" class="counter">0 ta</span>
       </div>
+      <div class="map-toolbar"><button type="button" id="toggleMap" class="secondary-btn">🗺️ Xaritada ko'rish</button><button type="button" id="nearMe" class="secondary-btn">📍 Menga yaqin</button><button type="button" id="clearNearMe" class="secondary-btn hidden">✕ Yaqin qidiruvni tozalash</button></div>
+      <div id="searchMapWrap" class="map-panel hidden"><div id="searchMap" class="map-canvas"></div><p class="map-help">Xaritada faqat joylashuvi belgilangan e'lonlar ko'rinadi.</p></div>
       <div id="searchResults" class="listing-grid"></div>
     </section>
 
@@ -144,6 +148,7 @@
           <label for="addDescription">Qo'shimcha ma'lumot</label>
           <textarea id="addDescription" rows="4" maxlength="2000" placeholder="Uy sharoitlari haqida yozing"></textarea>
         </div>
+        <div class="field map-field"><label>📍 Uy joylashuvi (ixtiyoriy)</label><p class="map-help">Xaritada nuqtani belgilang. Bu nuqta e'lon bilan ommaga ko'rinadi — xavfsizlik uchun taxminiy joyni tanlashingiz mumkin.</p><div class="map-toolbar"><button type="button" id="pickLocation" class="secondary-btn">🗺️ Xaritadan tanlash</button><button type="button" id="useMyLocation" class="secondary-btn">📍 GPS orqali</button><button type="button" id="clearLocation" class="secondary-btn">✕ O'chirish</button></div><div id="addMapWrap" class="map-panel hidden"><div id="addMap" class="map-canvas"></div></div><p id="locationStatus" class="map-help" role="status">Joylashuv belgilanmagan</p></div>
         <button class="primary-btn full-btn" type="submit">📤 E'lonni yuborish</button>
       </form>
     </section>
@@ -195,7 +200,10 @@
           <button id="adminRefresh" class="secondary-btn">🔄 Yangilash</button>
           <button id="adminLogout" class="secondary-btn">Chiqish</button>
         </div>
-        <div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>
+        <div class="panel" id="adminStats" aria-live="polite"></div>
+        <div class="field"><label for="adminStatusFilter">Barcha e'lonlarni holati bo'yicha saralash</label>
+          <select id="adminStatusFilter"><option value="">Barcha holatlar</option><option value="pending">Kutilmoqda</option><option value="approved">Tasdiqlangan</option><option value="rejected">Rad etilgan</option><option value="rented">Ijaraga berilgan</option></select></div>
+        <div class="section-heading"><h2>Shikoyatlar</h2></div><div id="adminReports" class="panel"></div><div class="section-heading"><h2>Admin harakatlari</h2></div><div id="adminAudit" class="panel"></div><div class="section-heading"><h2>Kutilayotgan e'lonlar</h2></div>
         <div id="pendingListings" class="listing-grid"></div>
         <div class="section-heading"><h2>Barcha e'lonlar</h2></div>
         <div id="adminListings" class="listing-grid"></div>

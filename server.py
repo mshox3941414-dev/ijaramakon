@@ -35,6 +35,7 @@ CORS(app, resources={
 
 TOKEN = os.environ.get("BOT_TOKEN", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+MODERATOR_PASSWORD = os.environ.get("MODERATOR_PASSWORD", "")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "./data"))
@@ -109,6 +110,21 @@ def initialize():
                 status TEXT DEFAULT 'pending', created_at TEXT NOT NULL
             )
         """)
+        # Idempotent migration: no destructive changes to existing listings.
+        if DATABASE_URL:
+            db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION")
+            db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION")
+        else:
+            existing = {row["name"] for row in db.execute("PRAGMA table_info(houses)").fetchall()}
+            for column in ("latitude", "longitude"):
+                if column not in existing:
+                    db.execute(f"ALTER TABLE houses ADD COLUMN {column} REAL")
+        for table, fields in (
+            ("admin_audit", "actor TEXT NOT NULL, action TEXT NOT NULL, listing_id INTEGER, detail TEXT DEFAULT '', created_at TEXT NOT NULL"),
+            ("listing_reports", "listing_id INTEGER NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL, status TEXT DEFAULT 'open'")
+        ):
+            primary = "BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT"
+            db.execute(f"CREATE TABLE IF NOT EXISTS {table} (id {primary}, {fields})")
         db.commit()
 
 
@@ -130,12 +146,22 @@ def execute(sql, params=()):
         return cur.lastrowid
 
 
-def is_admin():
+def admin_role():
     supplied = request.headers.get("X-Admin-Password", "")
-    return bool(
-        ADMIN_PASSWORD
-        and hmac.compare_digest(supplied, ADMIN_PASSWORD)
-    )
+    if ADMIN_PASSWORD and hmac.compare_digest(supplied, ADMIN_PASSWORD):
+        return "admin"
+    if MODERATOR_PASSWORD and hmac.compare_digest(supplied, MODERATOR_PASSWORD):
+        return "moderator"
+    return None
+
+
+def is_admin():
+    return admin_role() is not None
+
+
+def log_admin(db, action, listing_id=None, detail=""):
+    db.execute("INSERT INTO admin_audit (actor, action, listing_id, detail, created_at) VALUES (?, ?, ?, ?, ?)",
+               (admin_role() or "system", action, listing_id, detail, datetime.now(timezone.utc).isoformat()))
 
 
 def error(message, status=400):
@@ -339,6 +365,16 @@ def create_house():
     except ValueError as exc:
         return error(str(exc))
 
+    lat_raw, lon_raw = form.get("latitude", ""), form.get("longitude", "")
+    latitude = longitude = None
+    if lat_raw or lon_raw:
+        try:
+            latitude, longitude = float(lat_raw), float(lon_raw)
+            if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+                return error("Xaritadagi koordinatalar noto'g'ri")
+        except (TypeError, ValueError):
+            return error("Xaritadagi koordinatalar noto'g'ri")
+
     values = (
         clean(form.get("owner"), 100),
         clean(form.get("district"), 100),
@@ -351,15 +387,16 @@ def create_house():
         clean(form.get("address"), 200),
         clean(form.get("description"), 2000),
         photo_url,
-        datetime.now(timezone.utc).isoformat()
+        datetime.now(timezone.utc).isoformat(),
+        latitude, longitude
     )
 
     with db_lock, connect() as db:
         cur = db.execute("""
             INSERT INTO houses
             (owner, district, mahalla, type, rooms, repair, price,
-             phone, address, description, photo_url, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?) RETURNING id
+             phone, address, description, photo_url, status, created_at, latitude, longitude)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?) RETURNING id
         """, values)
         db.commit()
         listing_id = cur.fetchone()["id"] if DATABASE_URL else cur.fetchone()[0]
@@ -371,7 +408,7 @@ def create_house():
 def admin_listings():
     if not is_admin():
         return error("Admin ruxsati talab qilinadi", 403)
-    return jsonify({"listings": rows("SELECT * FROM houses ORDER BY id DESC")})
+    return jsonify({"listings": rows("SELECT * FROM houses ORDER BY id DESC"), "role": admin_role()})
 
 
 @app.post("/api/admin/listings/<int:listing_id>/<action>")
@@ -392,8 +429,85 @@ def admin_listing_action(listing_id, action):
             "UPDATE houses SET status = ? WHERE id = ?",
             (status_by_action[action], listing_id),
         )
-        db.commit()
         if cur.rowcount == 0:
             return error("E'lon topilmadi", 404)
+        log_admin(db, action, listing_id)
+        db.commit()
 
     return jsonify({"ok": True, "id": listing_id, "status": status_by_action[action]})
+
+
+@app.get("/api/admin/overview")
+def admin_overview():
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    items = rows("SELECT owner, status, created_at FROM houses")
+    counts = {status: sum(item["status"] == status for item in items)
+              for status in ("pending", "approved", "rejected", "rented")}
+    result = {"total": len(items), "users": len({item["owner"] for item in items if item["owner"]}),
+              "statuses": counts, "reports": rows("SELECT * FROM listing_reports ORDER BY id DESC")}
+    if admin_role() == "admin":
+        result["audit"] = rows("SELECT * FROM admin_audit ORDER BY id DESC LIMIT 100")
+    return jsonify(result)
+
+
+@app.post("/api/listings/<int:listing_id>/report")
+def report_listing(listing_id):
+    payload = request.get_json(silent=True) or {}
+    reason = clean(payload.get("reason"), 500)
+    if len(reason) < 10:
+        return error("Shikoyat sababini kamida 10 belgi bilan yozing")
+    with db_lock, connect() as db:
+        if not db.execute("SELECT id FROM houses WHERE id = ? AND status = 'approved'", (listing_id,)).fetchone():
+            return error("E'lon topilmadi", 404)
+        db.execute("INSERT INTO listing_reports (listing_id, reason, created_at) VALUES (?, ?, ?)",
+                   (listing_id, reason, datetime.now(timezone.utc).isoformat()))
+        db.commit()
+    return jsonify({"ok": True}), 201
+
+
+@app.post("/api/admin/reports/<int:report_id>/resolve")
+def resolve_report(report_id):
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    with db_lock, connect() as db:
+        cur = db.execute("UPDATE listing_reports SET status = 'resolved' WHERE id = ?", (report_id,))
+        if cur.rowcount == 0:
+            return error("Shikoyat topilmadi", 404)
+        log_admin(db, "resolve_report", None, str(report_id))
+        db.commit()
+    return jsonify({"ok": True})
+
+
+@app.patch("/api/admin/listings/<int:listing_id>")
+def edit_listing_admin(listing_id):
+    if admin_role() != "admin":
+        return error("Faqat bosh admin tahrirlay oladi", 403)
+    payload = request.get_json(silent=True) or {}
+    allowed = {"district": 100, "mahalla": 100, "type": 100, "rooms": 20,
+               "repair": 100, "phone": 20, "address": 200, "description": 2000}
+    changes = {}
+    for key, limit in allowed.items():
+        if key in payload:
+            value = clean(payload[key], limit)
+            if not value and key != "description":
+                return error(key + " bo'sh bo'lmasin")
+            changes[key] = value
+    if "price" in payload:
+        try:
+            price = int(payload["price"])
+            if not 0 < price <= 100000000000:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return error("Narx noto'g'ri")
+        changes["price"] = price
+    if not changes:
+        return error("O'zgartirish yo'q")
+    with db_lock, connect() as db:
+        sql = "UPDATE houses SET " + ", ".join(key + " = ?" for key in changes) + " WHERE id = ?"
+        cur = db.execute(sql, (*changes.values(), listing_id))
+        if cur.rowcount == 0:
+            return error("E'lon topilmadi", 404)
+        log_admin(db, "edit", listing_id, ", ".join(changes.keys()))
+        db.commit()
+    return jsonify({"ok": True})

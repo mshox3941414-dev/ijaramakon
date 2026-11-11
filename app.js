@@ -1429,7 +1429,7 @@ function initLocationMaps() {
   $("nearMe").onclick = () => {
     if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
     navigator.geolocation.getCurrentPosition(pos => {
-      $("toggleMap").click();
+      if ($("searchMapWrap").classList.contains("hidden")) $("toggleMap").click();
       if (searchMap) searchMap.setView([pos.coords.latitude,pos.coords.longitude],12);
     }, () => toast("GPS ruxsati berilmadi"),{timeout:12000});
   };

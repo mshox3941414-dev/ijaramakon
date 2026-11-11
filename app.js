@@ -782,6 +782,9 @@ async function submitListing(event) {
 
     toast("E'lon adminga yuborildi!");
     event.target.reset();
+    selectedLocation = null;
+    if (addMarker && addMap) { addMap.removeLayer(addMarker); addMarker = null; }
+    $("locationStatus").textContent = "Joylashuv belgilanmagan";
     updateMahalla("add");
 
     await loadListings();

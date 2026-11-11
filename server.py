@@ -217,7 +217,7 @@ def public_listing(item, owner=None, admin=False):
     if not admin and result["owner"] != owner:
         result.pop("owner", None)
 
-    if not admin:
+    if not admin and result["status"] != "approved":
         result.pop("phone", None)
     gallery = rows("SELECT id FROM listing_gallery WHERE listing_id = ? ORDER BY id", (result["id"],))
     gallery_urls = [f"/api/listings/{result['id']}/gallery/{photo['id']}" for photo in gallery]
@@ -388,8 +388,6 @@ def telegram_auth_logout():
 
 @app.get("/api/listings/<int:listing_id>/contact")
 def listing_contact(listing_id):
-    if not auth_user():
-        return error("Uy egasi bilan bog'lanish uchun avval Telegram orqali kiring", 401)
     matches = rows("SELECT phone FROM houses WHERE id=? AND status='approved'", (listing_id,))
     if not matches:
         return error("E'lon topilmadi", 404)

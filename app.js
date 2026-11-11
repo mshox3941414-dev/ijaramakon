@@ -529,7 +529,6 @@ function createCard(item, admin = false) {
           <button class="primary-btn approve-btn">Tasdiqlash</button>
           <button class="danger-btn reject-btn">Rad etish</button>
           <button class="secondary-btn rented-btn">Berildi</button>
-          <button class="danger-btn delete-btn">O'chirish</button>
         </div>
       ` : ""}
     </div>
@@ -550,11 +549,6 @@ function createCard(item, admin = false) {
     card.querySelector(".rented-btn").onclick =
       () => adminAction(item.id, "rented");
 
-    card.querySelector(".delete-btn").onclick = () => {
-      if (confirm("E'lon o'chirilsinmi?")) {
-        adminAction(item.id, "delete");
-      }
-    };
   }
 
   return card;
@@ -838,7 +832,14 @@ async function loadAdmin() {
       true
     );
 
-    renderCards("adminListings", data.listings, true);
+    const counts = Object.fromEntries(["pending","approved","rejected","rented"].map(status =>
+      [status,data.listings.filter(item => item.status === status).length]));
+    $("adminStats").textContent = "Jami: " + data.listings.length +
+      " | Kutilmoqda: " + counts.pending + " | Tasdiqlangan: " + counts.approved +
+      " | Rad etilgan: " + counts.rejected + " | Ijaraga berilgan: " + counts.rented;
+    const statusFilter = $("adminStatusFilter").value;
+    renderCards("adminListings", data.listings.filter(item =>
+      !statusFilter || item.status === statusFilter), true);
   } catch (err) {
     adminPassword = "";
     $("adminContent").classList.add("hidden");
@@ -929,6 +930,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   $("adminRefresh").onclick = loadAdmin;
+  $("adminStatusFilter").onchange = loadAdmin;
 
   $("adminLogout").onclick = () => {
     adminPassword = "";

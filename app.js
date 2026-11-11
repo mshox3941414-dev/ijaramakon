@@ -647,12 +647,10 @@ async function showDetail(item) {
 
   const wrapper = document.createElement("div");
 
-  const photo = imageURL(item.photo_url)
-    ? `<img class="detail-photo"
-         src="${escapeHTML(imageURL(item.photo_url))}"
-         alt="Uy rasmi">`
+  const photos = (Array.isArray(item.photos) && item.photos.length ? item.photos : [item.photo_url]).map(imageURL).filter(Boolean);
+  const photo = photos.length
+    ? `<div class="detail-gallery"><div class="gallery-stage"><img class="detail-photo" id="galleryMainPhoto" src="${escapeHTML(photos[0])}" alt="Uy rasmi"><button class="gallery-arrow gallery-prev" type="button" aria-label="Oldingi rasm">‹</button><button class="gallery-arrow gallery-next" type="button" aria-label="Keyingi rasm">›</button><span class="gallery-count">1 / ${photos.length}</span></div><div class="gallery-thumbs">${photos.map((src,i)=>`<button class="gallery-thumb ${i===0?"active":""}" type="button" data-index="${i}" aria-label="${i+1}-rasm"><img src="${escapeHTML(src)}" alt="Uy rasmi ${i+1}" loading="lazy"></button>`).join("")}</div></div>`
     : `<div class="listing-photo photo-placeholder">${listingIcon("home")}</div>`;
-
   wrapper.innerHTML = `
     ${photo}
     <h2>${escapeHTML(item.type)}</h2>
@@ -677,6 +675,22 @@ async function showDetail(item) {
   `;
 
   content.appendChild(wrapper);
+  if (photos.length) {
+    let index = 0;
+    const main = wrapper.querySelector("#galleryMainPhoto");
+    const thumbs = [...wrapper.querySelectorAll(".gallery-thumb")];
+    const show = next => {
+      index = (next + photos.length) % photos.length;
+      main.src = photos[index];
+      wrapper.querySelector(".gallery-count").textContent = `${index+1} / ${photos.length}`;
+      thumbs.forEach((btn,i)=>btn.classList.toggle("active", i===index));
+      thumbs[index]?.scrollIntoView({block:"nearest",inline:"nearest"});
+    };
+    wrapper.querySelector(".gallery-prev").onclick = () => show(index-1);
+    wrapper.querySelector(".gallery-next").onclick = () => show(index+1);
+    thumbs.forEach((btn,i)=>btn.onclick=()=>show(i));
+    if (photos.length === 1) wrapper.querySelectorAll(".gallery-arrow").forEach(btn=>btn.hidden=true);
+  }
 
   const link = wrapper.querySelector("a");
   if (link && !phoneURL(item.phone)) link.remove();
@@ -773,20 +787,15 @@ async function submitListing(event) {
     form.append(key, value);
   });
 
-  const image = $("addImage").files[0];
+  const images = Array.from($("addImage").files);
+  if (images.length > 10) return toast("Ko‘pi bilan 10 ta rasm tanlang");
 
-  if (image) {
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-
-    if (!allowed.includes(image.type)) {
+  for (const image of images) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(image.type))
       return toast("Faqat JPG, PNG yoki WEBP rasm tanlang");
-    }
-
-    if (image.size > 5 * 1024 * 1024) {
-      return toast("Rasm hajmi 5 MB dan oshmasin");
-    }
-
-    form.append("photo", image);
+    if (image.size > 5 * 1024 * 1024)
+      return toast("Har bir rasm 5 MB dan oshmasin");
+    form.append("photos", image);
   }
 
   button.disabled = true;

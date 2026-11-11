@@ -52,7 +52,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
-app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 52 * 1024 * 1024
 
 db_lock = threading.RLock()
 
@@ -133,6 +133,7 @@ def initialize():
         ):
             primary = "BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT"
             db.execute(f"CREATE TABLE IF NOT EXISTS {table} (id {primary}, {fields})")
+        db.execute("CREATE TABLE IF NOT EXISTS listing_gallery (id " + ("BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT") + ", listing_id INTEGER NOT NULL, image_data " + ("BYTEA" if DATABASE_URL else "BLOB") + " NOT NULL, content_type TEXT NOT NULL DEFAULT 'image/jpeg')")
         db.execute("CREATE TABLE IF NOT EXISTS admin_security (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         db.commit()
 
@@ -195,6 +196,11 @@ def public_listing(item, owner=None, admin=False):
     if not admin and result["owner"] != owner:
         result.pop("owner", None)
 
+    gallery = rows("SELECT id FROM listing_gallery WHERE listing_id = ? ORDER BY id", (result["id"],))
+    gallery_urls = [f"/api/listings/{result['id']}/gallery/{photo['id']}" for photo in gallery]
+    result["photos"] = list(dict.fromkeys(
+        ([result["photo_url"]] if result.get("photo_url") else []) + gallery_urls
+    ))
     return result
 
 
@@ -337,6 +343,21 @@ def listing_photo(listing_id):
                              "X-Content-Type-Options": "nosniff"})
 
 
+@app.get("/api/listings/<int:listing_id>/gallery/<int:photo_id>")
+def gallery_photo(listing_id, photo_id):
+    with db_lock, connect() as db:
+        row = db.execute(
+            """SELECT g.image_data, g.content_type FROM listing_gallery g
+               JOIN houses h ON h.id = g.listing_id
+               WHERE g.id = ? AND g.listing_id = ? AND h.status = 'approved'""",
+            (photo_id, listing_id)
+        ).fetchone()
+    if not row:
+        abort(404)
+    return Response(bytes(row["image_data"]), mimetype=row["content_type"],
+                    headers={"Cache-Control": "public, max-age=3600", "X-Content-Type-Options": "nosniff"})
+
+
 @app.get("/uploads/<path:filename>")
 def uploaded_file(filename):
     return send_from_directory(
@@ -384,14 +405,36 @@ def create_house():
         return error("Telefon raqami noto'g'ri")
 
     photo_url = ""
-
+    uploads = request.files.getlist("photos")
+    if not uploads and "photo" in request.files:
+        uploads = [request.files["photo"]]
+    uploads = [f for f in uploads if f and f.filename]
+    if len(uploads) > 10:
+        return error("10 tadan ko'p rasm yuklab bo'lmaydi")
+    gallery_data = []
     try:
-        if "photo" in request.files:
-            photo_url = save_photo(
-                request.files["photo"]
-            )
-    except ValueError as exc:
-        return error(str(exc))
+        import io
+        from PIL import Image
+        for file in uploads:
+            raw = file.read(MAX_IMAGE_SIZE + 1)
+            if len(raw) > MAX_IMAGE_SIZE:
+                return error("Har bir rasm 5 MB dan oshmasin")
+            try:
+                image = Image.open(io.BytesIO(raw))
+                image.verify()
+                image = Image.open(io.BytesIO(raw))
+                if image.format not in ("JPEG", "PNG", "WEBP"):
+                    raise ValueError()
+                image.thumbnail((1600, 1600))
+                image = image.convert("RGB")
+                output = io.BytesIO()
+                image.save(output, "JPEG", quality=85)
+                gallery_data.append(output.getvalue())
+            except Exception:
+                return error("Yaroqli JPG, PNG yoki WEBP rasm yuklang")
+    except Exception:
+        app.logger.exception("Gallery validation failed")
+        return error("Rasmlarni tekshirib bo'lmadi")
 
     lat_raw, lon_raw = form.get("latitude", ""), form.get("longitude", "")
     latitude = longitude = None
@@ -426,8 +469,15 @@ def create_house():
              phone, address, description, photo_url, status, created_at, latitude, longitude)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?) RETURNING id
         """, values)
-        db.commit()
         listing_id = cur.fetchone()["id"] if DATABASE_URL else cur.fetchone()[0]
+        for data in gallery_data:
+            db.execute("INSERT INTO listing_gallery (listing_id, image_data, content_type) VALUES (?, ?, ?)",
+                       (listing_id, data, "image/jpeg"))
+        if gallery_data:
+            first = db.execute("SELECT id FROM listing_gallery WHERE listing_id = ? ORDER BY id LIMIT 1", (listing_id,)).fetchone()
+            db.execute("UPDATE houses SET photo_url = ? WHERE id = ?",
+                       (f"/api/listings/{listing_id}/gallery/{first['id']}", listing_id))
+        db.commit()
 
     return jsonify({"ok": True, "id": listing_id, "status": "pending"}), 201
 

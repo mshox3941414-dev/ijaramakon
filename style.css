@@ -403,3 +403,23 @@ body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;lette
  .toast{bottom:88px}
 }
 @media(max-width:370px){.listing-grid{gap:7px}.listing-photo{height:118px}.listing-body{padding:9px}.listing-actions{flex-direction:column}}
+
+/* Crisp modern line icons for navigation and primary actions */
+.ui-icon{display:inline-block;flex-shrink:0;vertical-align:middle;stroke:currentColor}
+.nav-btn{display:flex;align-items:center;justify-content:center;gap:8px}
+.nav-btn .ui-icon{width:19px;height:19px;transition:transform .2s ease}
+.nav-btn:hover .ui-icon{transform:translateY(-1px)}
+.nav-btn.active .ui-icon{stroke-width:2.2}
+.hero-buttons button{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.hero-buttons .ui-icon{width:19px;height:19px}
+.brand-icon{display:flex;align-items:center;justify-content:center;width:51px;height:51px}
+.brand-icon .ui-icon{width:28px;height:28px;color:var(--blue);stroke-width:1.7}
+.admin-shortcut{display:none;background:#eff5ff;color:var(--blue);border:1px solid var(--border);border-radius:11px;width:36px;height:36px;align-items:center;justify-content:center}
+.admin-shortcut .ui-icon{width:19px;height:19px}
+@media(max-width:600px){
+ .nav-btn{flex-direction:column;gap:3px;font-size:10px}
+ .nav-btn .ui-icon{width:21px;height:21px}
+ .admin-shortcut{display:flex}
+ .brand-icon{width:42px;height:42px}
+ .brand-icon .ui-icon{width:24px;height:24px}
+}

@@ -969,12 +969,12 @@ function setupGuidedTour() {
     spot.style.width=(rect.width+10)+"px"; spot.style.height=(rect.height+10)+"px";
     document.getElementById("tourTitle").textContent=title;
     document.getElementById("tourText").textContent=description;
-    document.getElementById("tourProgress").textContent=(index+1)+" / "+TOUR_STEPS.length;
-    document.getElementById("tourNext").textContent=index===TOUR_STEPS.length-1?"Tugatish ✓":"Keyingisi →";
-    const tipHeight=tip.offsetHeight||190;
+    document.getElementById("tourProgress").textContent="Qadam "+(index+1)+" / "+TOUR_STEPS.length;
+    document.getElementById("tourNext").textContent=index===TOUR_STEPS.length-1?"Tushunarli ✓":"Davom etish →";
+    const tipHeight=tip.offsetHeight||210;
     const below=rect.bottom+18+tipHeight<window.innerHeight;
     tip.style.top=Math.max(8,Math.min(window.innerHeight-tipHeight-8,below?rect.bottom+18:rect.top-tipHeight-18))+"px";
-    tip.style.left=Math.max(8,Math.min(window.innerWidth-tip.offsetWidth-8,rect.left))+"px";
+    tip.style.left=Math.max(12,Math.min(window.innerWidth-tip.offsetWidth-12,rect.left))+"px";
   };
   const start=()=>{ index=0; layer.classList.remove("hidden");layer.setAttribute("aria-hidden","false");requestAnimationFrame(show); };
   document.getElementById("tourNext").onclick=()=>{ if (++index>=TOUR_STEPS.length) close(); else show(); };

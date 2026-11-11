@@ -473,6 +473,17 @@ function statusLabel(status) {
   return labels[status] || "Holati noma’lum";
 }
 
+const listingIcon = name => {
+ const p = {
+ pin:'<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2.5"/>',
+ door:'<path d="M5 21V3h14v18M3 21h18"/><path d="M14 12h.01"/>',
+ heart:'<path d="M20.8 8.6c0 4.4-8.8 10.4-8.8 10.4S3.2 13 3.2 8.6a4.6 4.6 0 0 1 8.8-1.8 4.6 4.6 0 0 1 8.8 1.8z"/>',
+ home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-8h6v8"/>',
+ phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19 19 0 0 1-17.7-17.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.9a2 2 0 0 1-.6 1.8L7.2 10a16 16 0 0 0 6.8 6.8l1.6-1.8a2 2 0 0 1 1.8-.6l2.9.5a2 2 0 0 1 1.7 2z"/>'
+ };
+ return '<svg class="listing-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (p[name] || p.home) + '</svg>';
+};
+
 function createCard(item, admin = false) {
   const card = document.createElement("article");
   card.className = "listing-card";
@@ -483,18 +494,18 @@ function createCard(item, admin = false) {
     ? `<img class="listing-photo"
          src="${escapeHTML(imageURL(item.photo_url))}"
          alt="Uy rasmi" loading="lazy">`
-    : `<div class="listing-photo photo-placeholder">🏡</div>`;
+    : `<div class="listing-photo photo-placeholder">${listingIcon("home")}</div>`;
 
   card.innerHTML = `
     ${photo}
     <div class="listing-body">
       <h3>${escapeHTML(item.type)}</h3>
       <p>
-        📍 ${escapeHTML(item.district)},
+        ${listingIcon("pin")} ${escapeHTML(item.district)},
         ${escapeHTML(item.mahalla)}
       </p>
       <p>
-        🚪 ${escapeHTML(item.rooms)} xona ·
+        ${listingIcon("door")} ${escapeHTML(item.rooms)} xona ·
         ${escapeHTML(item.repair)}
       </p>
       <div class="listing-price">
@@ -508,7 +519,7 @@ function createCard(item, admin = false) {
         <button class="primary-btn view-btn">Batafsil</button>
         ${!admin ? `
           <button class="secondary-btn save-btn">
-            ${saved ? "❤️ Saqlangan" : "🤍 Saqlash"}
+            ${listingIcon("heart")} ${saved ? "Saqlangan" : "Saqlash"}
           </button>
         ` : ""}
       </div>
@@ -631,7 +642,7 @@ function showDetail(item) {
     ? `<img class="detail-photo"
          src="${escapeHTML(imageURL(item.photo_url))}"
          alt="Uy rasmi">`
-    : `<div class="listing-photo photo-placeholder">🏡</div>`;
+    : `<div class="listing-photo photo-placeholder">${listingIcon("home")}</div>`;
 
   wrapper.innerHTML = `
     ${photo}

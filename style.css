@@ -685,3 +685,20 @@ body.phone-login-open{overflow:hidden}
 .header-lang{max-width:145px;min-height:38px;border:1px solid var(--border,#dce5f0);border-radius:12px;background:var(--white,#fff);color:var(--text,#182b46);font-size:13px;font-weight:650;padding:7px 9px;cursor:pointer}
 .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:600px){.header{flex-wrap:wrap;gap:7px}.header-actions{gap:6px}.header-tour-btn{padding:8px 9px;font-size:12px}.header-lang{max-width:126px;font-size:12px;padding:7px 6px}.header-tour-btn span{display:none}}
+
+/* IjaraMakon modern utility header; existing pages and colors stay intact */
+.top-utility-bar{background:#083c43;color:#f4ffff;min-height:37px;font-size:12px}
+.top-utility-inner{max-width:1180px;margin:auto;padding:6px 20px;display:flex;align-items:center;gap:20px;justify-content:space-between}
+.top-support{color:#f3ffff;text-decoration:none;font-weight:700;white-space:nowrap}
+.top-utility-caption{opacity:.8;font-weight:500}
+.top-socials{display:flex;gap:9px;align-items:center}
+.top-socials span{width:25px;height:25px;border:1px solid rgba(255,255,255,.4);border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:800;cursor:default;opacity:.9}
+.header-actions{gap:8px!important;flex-wrap:nowrap!important}
+.header-tour-btn,.header-lang{min-height:40px!important;border:1px solid #dce6f4!important;border-radius:13px!important;background:#f3f7ff!important;color:#1c4f8b!important;box-shadow:0 2px 7px rgba(30,65,120,.045);font-weight:750!important}
+.header-tour-btn{padding:6px 13px!important;gap:8px!important}
+.header-action-icon{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#dceaff;color:#1359b6;font-size:15px;font-weight:900}
+.header-lang{padding:7px 10px!important;max-width:165px!important;cursor:pointer}
+.settings-toggle{border-radius:12px!important;min-width:40px;min-height:40px}
+@media(min-width:901px){.top-utility-bar{position:sticky;top:0;z-index:990}.header{position:sticky;top:37px;z-index:989;background:var(--white,#fff)}.main-nav{position:sticky;top:116px;z-index:988;box-shadow:0 6px 22px rgba(30,63,105,.1)}.nav-btn{min-width:0}}
+@media(max-width:900px){.top-utility-caption{display:none}.top-utility-inner{gap:8px}.top-socials{gap:4px}.header-actions{flex-wrap:wrap!important;justify-content:flex-end}}
+@media(max-width:600px){.top-utility-inner{padding:5px 12px}.top-support{font-size:10px}.top-socials span{width:21px;height:21px;font-size:12px}.header-tour-btn{padding:7px!important}.header-tour-btn span:not(.header-action-icon){display:none}.header-lang{max-width:140px!important;font-size:12px}}

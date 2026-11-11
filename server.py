@@ -287,4 +287,48 @@ def create_house():
         clean(form.get("description"), 2000),
         photo_url,
         datetime.now(timezone.utc).isoformat()
-   
+    )
+
+    with db_lock, connect() as db:
+        cur = db.execute("""
+            INSERT INTO houses
+            (owner, district, mahalla, type, rooms, repair, price,
+             phone, address, description, photo_url, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        """, values)
+        db.commit()
+        listing_id = cur.lastrowid
+
+    return jsonify({"ok": True, "id": listing_id, "status": "pending"}), 201
+
+
+@app.get("/api/admin/listings")
+def admin_listings():
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+    return jsonify({"listings": rows("SELECT * FROM houses ORDER BY id DESC")})
+
+
+@app.post("/api/admin/listings/<int:listing_id>/<action>")
+def admin_listing_action(listing_id, action):
+    if not is_admin():
+        return error("Admin ruxsati talab qilinadi", 403)
+
+    status_by_action = {
+        "approve": "approved",
+        "reject": "rejected",
+        "rented": "rented",
+    }
+    if action not in status_by_action:
+        return error("Noma'lum amal", 400)
+
+    with db_lock, connect() as db:
+        cur = db.execute(
+            "UPDATE houses SET status = ? WHERE id = ?",
+            (status_by_action[action], listing_id),
+        )
+        db.commit()
+        if cur.rowcount == 0:
+            return error("E'lon topilmadi", 404)
+
+    return jsonify({"ok": True, "id": listing_id, "status": status_by_action[action]})

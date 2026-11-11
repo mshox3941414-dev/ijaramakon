@@ -1,6 +1,11 @@
 import os
 import re
 import hmac
+import hashlib
+import secrets
+import json
+import urllib.request
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import psycopg
 from psycopg.rows import dict_row
@@ -125,6 +130,7 @@ def initialize():
         ):
             primary = "BIGSERIAL PRIMARY KEY" if DATABASE_URL else "INTEGER PRIMARY KEY AUTOINCREMENT"
             db.execute(f"CREATE TABLE IF NOT EXISTS {table} (id {primary}, {fields})")
+        db.execute("CREATE TABLE IF NOT EXISTS admin_security (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         db.commit()
 
 
@@ -148,7 +154,11 @@ def execute(sql, params=()):
 
 def admin_role():
     supplied = request.headers.get("X-Admin-Password", "")
-    if ADMIN_PASSWORD and hmac.compare_digest(supplied, ADMIN_PASSWORD):
+    override = rows("SELECT value FROM admin_security WHERE key = ?", ("password_hash",))
+    if override:
+        if supplied and check_password_hash(override[0]["value"], supplied):
+            return "admin"
+    elif ADMIN_PASSWORD and hmac.compare_digest(supplied, ADMIN_PASSWORD):
         return "admin"
     if MODERATOR_PASSWORD and hmac.compare_digest(supplied, MODERATOR_PASSWORD):
         return "moderator"
@@ -511,3 +521,67 @@ def edit_listing_admin(listing_id):
         log_admin(db, "edit", listing_id, ", ".join(changes.keys()))
         db.commit()
     return jsonify({"ok": True})
+
+
+def security_value(db, key):
+    item = db.execute("SELECT value FROM admin_security WHERE key = ?", (key,)).fetchone()
+    return item["value"] if item else None
+
+
+def set_security(db, key, value):
+    db.execute("DELETE FROM admin_security WHERE key = ?", (key,))
+    db.execute("INSERT INTO admin_security (key, value) VALUES (?, ?)", (key, value))
+
+
+@app.post("/api/admin/password-reset/request")
+def request_admin_password_reset():
+    # A generic response prevents account enumeration and configuration disclosure.
+    response = jsonify({"ok": True, "message": "Agar tiklash sozlangan bo'lsa, kod admin Telegramiga yuboriladi."})
+    if not TOKEN or not ADMIN_ID:
+        return response
+    now = int(time.time())
+    with db_lock, connect() as db:
+        last = int(security_value(db, "reset_requested_at") or 0)
+        if now - last < 120:
+            return response
+        code = f"{secrets.randbelow(1000000):06d}"
+        set_security(db, "reset_code_hash", hashlib.sha256(code.encode()).hexdigest())
+        set_security(db, "reset_expires_at", str(now + 600))
+        set_security(db, "reset_requested_at", str(now))
+        set_security(db, "reset_attempts", "0")
+        db.commit()
+    try:
+        payload = json.dumps({"chat_id": ADMIN_ID, "text": "IjaraMakon admin parolini tiklash kodi: " + code + "\\nKod 10 daqiqa amal qiladi. Uni hech kimga bermang."}).encode()
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{TOKEN}/sendMessage", data=payload,
+            headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=8) as sent:
+            if not json.load(sent).get("ok"):
+                app.logger.warning("Telegram password recovery message failed")
+    except Exception:
+        app.logger.exception("Admin recovery Telegram delivery failed")
+    return response
+
+
+@app.post("/api/admin/password-reset/confirm")
+def confirm_admin_password_reset():
+    payload = request.get_json(silent=True) or {}
+    code = str(payload.get("code", "")).strip()
+    new_password = str(payload.get("password", ""))
+    if not re.fullmatch(r"[0-9]{6}", code) or len(new_password) < 12 or len(new_password) > 128:
+        return error("Kod 6 raqam, yangi parol esa kamida 12 belgi bo'lishi kerak")
+    with db_lock, connect() as db:
+        now = int(time.time())
+        stored = security_value(db, "reset_code_hash")
+        expires = int(security_value(db, "reset_expires_at") or 0)
+        attempts = int(security_value(db, "reset_attempts") or 0)
+        if not stored or now > expires or attempts >= 5:
+            return error("Kod eskirgan. Yangisini so'rang", 403)
+        set_security(db, "reset_attempts", str(attempts + 1))
+        if not hmac.compare_digest(stored, hashlib.sha256(code.encode()).hexdigest()):
+            db.commit()
+            return error("Kod noto'g'ri", 403)
+        set_security(db, "password_hash", generate_password_hash(new_password))
+        db.execute("DELETE FROM admin_security WHERE key IN ('reset_code_hash', 'reset_expires_at', 'reset_attempts')")
+        db.commit()
+    return jsonify({"ok": True, "message": "Yangi admin paroli saqlandi"})

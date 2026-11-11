@@ -920,6 +920,28 @@ document.addEventListener("DOMContentLoaded", () => {
   $("listingForm").onsubmit = submitListing;
   $("profileForm").onsubmit = saveProfile;
 
+  $("adminForgotPassword").onclick = () => $("adminResetPanel").classList.toggle("hidden");
+  $("adminSendResetCode").onclick = async () => {
+    try {
+      const response = await api("/api/admin/password-reset/request", {method:"POST"});
+      toast(response.message);
+    } catch (err) { toast(err.message); }
+  };
+  $("adminConfirmReset").onclick = async () => {
+    const code = $("adminResetCode").value.trim();
+    const password = $("adminNewPassword").value;
+    try {
+      const response = await api("/api/admin/password-reset/confirm", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({code,password})
+      });
+      $("adminPassword").value = password;
+      $("adminResetCode").value = "";
+      $("adminNewPassword").value = "";
+      $("adminResetPanel").classList.add("hidden");
+      toast(response.message);
+    } catch(err) { toast(err.message); }
+  };
   $("adminLoginButton").onclick = () => {
     adminPassword = $("adminPassword").value;
 

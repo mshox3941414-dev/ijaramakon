@@ -1430,7 +1430,7 @@ function initLocationMaps() {
     if (!navigator.geolocation) return toast("GPS brauzerda mavjud emas");
     navigator.geolocation.getCurrentPosition(pos => {
       if ($("searchMapWrap").classList.contains("hidden")) $("toggleMap").click();
-      if (searchMap) searchMap.setView([pos.coords.latitude,pos.coords.longitude],12);
+      if (searchMap) { setTimeout(() => searchMap.setView([pos.coords.latitude,pos.coords.longitude],12), 120); }
     }, () => toast("GPS ruxsati berilmadi"),{timeout:12000});
   };
 }

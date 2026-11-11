@@ -8,7 +8,7 @@
   <title>IjaraMakon — Xorazm</title>
   <link rel="stylesheet" href="./style.css?v=20261112-analytics26">
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-  <script src="./app.js?v=20261112-analytics26" defer></script><script src="./i18n.js?v=20261111-visual22" defer></script>
+  <script src="./app.js?v=20261112-analytics27" defer></script><script src="./i18n.js?v=20261111-visual22" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxYFZzkw0FJ9hX4u2PpYQ7mM=" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
   <style>
@@ -325,8 +325,8 @@ document.addEventListener("DOMContentLoaded", function initTelegramViewport() {
           <div class="admin-section-header"><div><h2>Statistika va tahlil</h2><p>Tuman va mahallalar kesimida e'lonlar hamda haqiqiy ko'rishlar</p></div><button id="adminExcel" type="button" class="primary-btn">Excel yuklab olish</button></div>
           <div class="admin-analytics-summary" id="adminAnalyticsSummary"></div>
           <div class="admin-chart-grid"><div class="admin-chart-panel"><h3>Tumanlar bo'yicha e'lonlar</h3><div id="adminDistrictListingsChart"></div></div><div class="admin-chart-panel"><h3>Tumanlar bo'yicha ko'rishlar</h3><div id="adminDistrictViewsChart"></div></div></div>
-          <div class="field"><label for="adminDistrictPick">Mahalla statistikasini ko'rish uchun tumanni tanlang</label><select id="adminDistrictPick"></select></div>
-          <div class="admin-chart-grid"><div class="admin-chart-panel"><h3>Mahallalar bo'yicha e'lonlar</h3><div id="adminMahallaListingsChart"></div></div><div class="admin-chart-panel"><h3>Mahallalar bo'yicha ko'rishlar</h3><div id="adminMahallaViewsChart"></div></div></div>
+          <div class="admin-section-header"><div><h3>Mahallalar reytingi</h3><p>Barcha mahallalar avtomatik taqqoslanadi — tuman tanlash shart emas</p></div></div>
+          <div class="admin-chart-grid"><div class="admin-chart-panel"><h3>Mahallalar bo'yicha e'lonlar</h3><div id="adminMahallaListingsChart"></div></div><div class="admin-chart-panel"><h3>Mahallalar bo'yicha ko'rishlar</h3><div id="adminMahallaViewsChart"></div></div></div><div class="admin-chart-grid"><div class="admin-chart-panel"><h3>Eng faol tumanlar — bir e’longa o‘rtacha ko‘rish</h3><div id="adminDistrictEfficiencyChart"></div></div><div class="admin-chart-panel"><h3>Eng faol mahallalar — bir e’longa o‘rtacha ko‘rish</h3><div id="adminMahallaEfficiencyChart"></div></div></div>
         </section>
         <section id="adminModeratorsSection" class="admin-extra-panel hidden"><div class="admin-section-header"><div><h2>Moderatorlar va ruxsatlar</h2><p>Moderator faqat e'lon va shikoyatlarni boshqaradi</p></div></div><div class="admin-moderator-create"><input id="newModeratorName" placeholder="Moderator logini" autocomplete="off"><input id="newModeratorPassword" type="password" placeholder="Kamida 12 belgili parol" autocomplete="new-password"><button id="createModerator" class="primary-btn" type="button">Moderator qo'shish</button></div><div id="adminModeratorsList"></div></section>
         <div class="field"><label for="adminStatusFilter">Barcha e'lonlarni holati bo'yicha saralash</label>

@@ -99,6 +99,9 @@ IJARA_TRANSLATIONS["Batafsil"]={ru:"Подробнее",en:"Details"};
   const country=language==="ru"?"ru":language==="en"?"gb":"uz";
   flag.src="https://flagcdn.com/w40/"+country+".png";
   flag.alt=language==="ru"?"Флаг России":language==="en"?"United Kingdom flag":"O‘zbekiston bayrog‘i";
+  const current=document.getElementById("languageCurrent");
+  if(current)current.textContent=language==="ru"?"RU · Русский":language==="en"?"ENG · English":"UZ · O‘zbek";
+  document.querySelectorAll("[data-lang]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.lang===language)));
  }
  function setLanguage(lang){
   if(!["uz","ru","en"].includes(lang))return;
@@ -110,6 +113,12 @@ IJARA_TRANSLATIONS["Batafsil"]={ru:"Подробнее",en:"Details"};
  document.addEventListener("DOMContentLoaded",()=>{
   const select=document.getElementById("siteLanguage");
   if(select){select.value=language;select.addEventListener("change",()=>setLanguage(select.value));}
+  const toggle=document.getElementById("languageToggle"), options=document.getElementById("languageOptions");
+  const closeLanguages=()=>{options?.classList.add("hidden");toggle?.setAttribute("aria-expanded","false");};
+  toggle?.addEventListener("click",()=>{const isOpen=!options.classList.toggle("hidden");toggle.setAttribute("aria-expanded",String(isOpen));});
+  options?.querySelectorAll("[data-lang]").forEach(button=>button.addEventListener("click",()=>{select.value=button.dataset.lang;setLanguage(button.dataset.lang);closeLanguages();toggle?.focus();}));
+  document.addEventListener("click",event=>{if(!event.target.closest(".header-lang-wrap"))closeLanguages();});
+  document.addEventListener("keydown",event=>{if(event.key==="Escape")closeLanguages();});
   apply();
   updateFlag();
   const observer=new MutationObserver(records=>{

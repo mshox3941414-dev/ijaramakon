@@ -52,7 +52,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
-app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 52 * 1024 * 1024
 
 db_lock = threading.RLock()
 
@@ -197,9 +197,10 @@ def public_listing(item, owner=None, admin=False):
         result.pop("owner", None)
 
     gallery = rows("SELECT id FROM listing_gallery WHERE listing_id = ? ORDER BY id", (result["id"],))
-    result["photos"] = ([result["photo_url"]] if result.get("photo_url") else []) + [
-        f"/api/listings/{result['id']}/gallery/{photo['id']}" for photo in gallery
-    ]
+    gallery_urls = [f"/api/listings/{result['id']}/gallery/{photo['id']}" for photo in gallery]
+    result["photos"] = list(dict.fromkeys(
+        ([result["photo_url"]] if result.get("photo_url") else []) + gallery_urls
+    ))
     return result
 
 
@@ -434,12 +435,6 @@ def create_house():
     except Exception:
         app.logger.exception("Gallery validation failed")
         return error("Rasmlarni tekshirib bo'lmadi")
-
-    try:
-        if False:
-            pass
-    except ValueError as exc:
-        return error(str(exc))
 
     lat_raw, lon_raw = form.get("latitude", ""), form.get("longitude", "")
     latitude = longitude = None

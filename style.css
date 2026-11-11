@@ -750,3 +750,6 @@ html[data-mode="dark"] .listing-actions .primary-btn{color:#fff!important}
 html[data-mode="dark"] .header{background:#182337!important}
 html[data-mode="dark"] .location-pill{background:#263a55!important;color:#e4eeff!important;border-color:#3d5271!important}
 @media(max-width:600px){.top-support{font-size:12px!important}.top-socials span{width:24px;height:24px}.top-socials img{width:14px;height:14px}.header-lang{min-width:124px;gap:5px;padding:7px!important}.language-flag{width:20px;height:14px}}
+
+/* Modal dialogs must always overlay the sticky desktop header. */
+.modal:not(.hidden){z-index:2000!important}

@@ -547,6 +547,7 @@ function createCard(item, admin = false) {
         ${money(item.price)} so'm/oy
       </div>
       <div class="listing-views">${listingIcon("eye")} <span data-view-count="${item.id}">${(Number(item.view_count || 0) * 10).toLocaleString("uz-UZ")}</span> faollik balli</div>
+      ${formatListingDate(item.created_at) ? `<div class="listing-posted-date">${listingCalendarIcon} ${escapeHTML(formatListingDate(item.created_at))}</div>` : ""}
       <span class="status ${escapeHTML(item.status)}">
         ${statusLabel(item.status)}
       </span>
@@ -1070,6 +1071,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $(id).addEventListener("change", renderSearch);
   });
 
+  $("searchFloor").addEventListener("change", renderSearch);
   $("searchDistrict").addEventListener("change", renderSearch);
   $("searchMaxPrice").addEventListener("input", renderSearch);
 

@@ -1374,9 +1374,11 @@ document.addEventListener("DOMContentLoaded", () => {
       Mahalla: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
       Type: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8"/>',
       Rooms: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M15 12h.01"/>',
-      Repair: '<path d="m14.7 6.3 3 3M4 20l8.7-8.7a5 5 0 0 0 6.6-6.6l-3.2 3.2-3-3L16.3 1.7a5 5 0 0 0-6.6 6.6L1 17l3 3Z"/>'
+      Repair: '<path d="m14.7 6.3 3 3M4 20l8.7-8.7a5 5 0 0 0 6.6-6.6l-3.2 3.2-3-3L16.3 1.7a5 5 0 0 0-6.6 6.6L1 17l3 3Z"/>',
+      Floor: '<path d="M4 21h16M7 21v-5h5v-5h5V6h4"/>'
     };
     const fieldInfo = {
+      Floor: "Kvartira qavati",
       District: "Tuman yoki shahar",
       Mahalla: "Mahallani tanlang",
       Type: "Uy turi",
@@ -1397,10 +1399,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return svg;
     }
 
+    const uiText = text => window.ijaraTranslate ? window.ijaraTranslate(text) : text;
+    const optionText = option => {
+      if (!option) return "";
+      const source = option.value && !option.value.match(/^\d+$/) ? option.value : option.textContent;
+      return uiText(source) !== source ? uiText(source) : option.textContent;
+    };
     function sync(binding) {
       const option = binding.select.selectedOptions[0];
 
-      binding.label.textContent = option?.textContent || binding.title;
+      binding.label.textContent = optionText(option) || uiText(binding.title);
 
       binding.button.disabled = binding.select.disabled;
     }
@@ -1427,7 +1435,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (option.disabled || option.hidden) return;
 
         if (
-          !option.textContent
+          !optionText(option)
             .toLocaleLowerCase("uz")
             .includes(term)
         ) return;
@@ -1442,7 +1450,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.classList.toggle("selected", selected);
 
         const label = document.createElement("span");
-        label.textContent = option.textContent;
+        label.textContent = optionText(option);
 
         const check = document.createElement("span");
         check.className = "im-picker-check";
@@ -1468,7 +1476,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!list.children.length) {
         const empty = document.createElement("p");
         empty.className = "im-picker-empty";
-        empty.textContent = "Ma’lumot topilmadi";
+        empty.textContent = uiText("Ma’lumot topilmadi");
         list.appendChild(empty);
       }
     }
@@ -1477,8 +1485,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (binding.select.disabled) return;
 
       active = binding;
-      title.textContent = binding.title;
+      title.textContent = uiText(binding.title);
       query.value = "";
+      query.placeholder = uiText("Qidirish...");
+      query.setAttribute("aria-label",uiText("Ro\'yxatdan qidirish"));
 
       render();
 
@@ -1545,6 +1555,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    document.addEventListener("ijara:languagechange",()=>{bindings.forEach(sync);if(active){title.textContent=uiText(active.title);query.placeholder=uiText("Qidirish...");render();}});
     query.oninput = render;
     closeButton.onclick = close;
 

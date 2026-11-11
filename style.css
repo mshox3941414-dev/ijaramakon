@@ -816,3 +816,11 @@ html[data-mode="dark"] .listing-actions .report-btn{background:#3d2637!important
 html[data-mode="dark"] .listing-views,html[data-mode="dark"] .detail-views{color:#78e3b6!important}
 html[data-mode="dark"] .listing-views .listing-icon{color:#78e3b6!important}
 @media(max-width:480px){.listing-actions .view-btn,.listing-actions .report-btn{gap:5px;font-size:13px!important}.listing-actions .view-btn .premium-ui-icon{width:15px;height:15px}}
+
+/* Consistent premium SVG headings and contact action */
+.page-title h1 .section-icon{display:inline-block;width:28px;height:28px;vertical-align:-5px;margin-right:8px;color:#1767d8;stroke-width:1.85;flex-shrink:0}
+#saved .page-title h1 .section-icon{color:#e25276}
+#profile .page-title h1 .section-icon{color:#1767d8}
+#admin .page-title h1 .section-icon{color:#217eab}
+.detail-contact [data-action="call"] .section-icon{width:18px;height:18px;vertical-align:middle;color:currentColor;stroke-width:2}
+@media(max-width:600px){.page-title h1 .section-icon{width:24px;height:24px;vertical-align:-4px;margin-right:6px}}

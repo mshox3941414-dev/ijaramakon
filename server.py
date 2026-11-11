@@ -119,8 +119,11 @@ def initialize():
         if DATABASE_URL:
             db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION")
             db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION")
+            db.execute("ALTER TABLE houses ADD COLUMN IF NOT EXISTS view_count INTEGER NOT NULL DEFAULT 0")
         else:
             existing = {row["name"] for row in db.execute("PRAGMA table_info(houses)").fetchall()}
+            if "view_count" not in existing:
+                db.execute("ALTER TABLE houses ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0")
             for column in ("latitude", "longitude"):
                 if column not in existing:
                     db.execute(f"ALTER TABLE houses ADD COLUMN {column} REAL")
@@ -296,6 +299,21 @@ def save_photo(file):
     )
 
     return "/uploads/" + filename
+
+
+@app.post("/api/listings/<int:listing_id>/view")
+def record_listing_view(listing_id):
+    # Count a deliberate detail opening, never a feed impression.
+    with db_lock, connect() as db:
+        cur = db.execute(
+            "UPDATE houses SET view_count = view_count + 1 WHERE id = ? AND status = 'approved'",
+            (listing_id,)
+        )
+        if cur.rowcount == 0:
+            return error("E'lon topilmadi", 404)
+        item = db.execute("SELECT view_count FROM houses WHERE id = ?", (listing_id,)).fetchone()
+        db.commit()
+    return jsonify({"ok": True, "view_count": item["view_count"]})
 
 
 @app.get("/api/listings/<int:listing_id>/photo")

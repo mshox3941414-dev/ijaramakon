@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response, abort
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
@@ -260,6 +260,27 @@ def save_photo(file):
     )
 
     return "/uploads/" + filename
+
+
+@app.get("/api/listings/<int:listing_id>/photo")
+def listing_photo(listing_id):
+    if not DATABASE_URL:
+        abort(404)
+    with psycopg.connect(DATABASE_URL) as db:
+        with db.cursor() as cur:
+            cur.execute(
+                """SELECT i.image_data, i.content_type
+                   FROM house_images i
+                   JOIN houses h ON h.id = i.listing_id
+                   WHERE h.id = %s AND h.status = 'approved'""",
+                (listing_id,)
+            )
+            record = cur.fetchone()
+    if not record:
+        abort(404)
+    return Response(bytes(record[0]), mimetype=record[1],
+                    headers={"Cache-Control": "public, max-age=3600",
+                             "X-Content-Type-Options": "nosniff"})
 
 
 @app.get("/uploads/<path:filename>")

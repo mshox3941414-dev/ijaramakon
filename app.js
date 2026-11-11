@@ -536,8 +536,8 @@ function createCard(item, admin = false) {
     <div class="listing-body">
       <h3>${escapeHTML(item.type)}</h3>
       <p>
-        ${listingIcon("pin")} ${escapeHTML(item.district)},
-        ${escapeHTML(item.mahalla)}
+        ${listingIcon("pin")} <span data-no-translate>${escapeHTML(item.district)},
+        ${escapeHTML(item.mahalla)}</span>
       </p>
       <p>
         ${listingIcon("door")} ${escapeHTML(item.rooms)} xona ·
@@ -697,7 +697,7 @@ async function showDetail(item) {
     </div>
     <div class="detail-information-column">
       <div class="detail-heading"><span class="detail-chip">Ijara</span><span class="detail-chip">${escapeHTML(item.type)}</span></div>
-      <h2>${escapeHTML(item.type)} — ${escapeHTML(item.mahalla)}</h2>
+      <h2><span>${escapeHTML(item.type)}</span> — <span data-no-translate>${escapeHTML(item.mahalla)}</span></h2>
       <div class="detail-main-price">${money(item.price)} so'm <span>/ oy</span></div>
       <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${(Number(item.view_count || 0) * 10).toLocaleString("uz-UZ")}</span> faollik balli</p>
       <div class="detail-contact">
@@ -711,7 +711,7 @@ async function showDetail(item) {
         <div><dt>Xonalar soni</dt><dd>${escapeHTML(item.rooms)}</dd></div>
         ${isApartment(item.type) && item.floor ? `<div><dt>Kvartira qavati</dt><dd>${escapeHTML(item.floor)}-qavat</dd></div>` : ""}
         <div><dt>Ta'mir holati</dt><dd>${escapeHTML(item.repair)}</dd></div>
-        <div><dt>Manzil</dt><dd>${escapeHTML(item.address)}</dd></div>
+        <div><dt>Manzil</dt><dd data-no-translate>${escapeHTML(item.address)}</dd></div>
       </dl>
       ${item.description ? `<p class="detail-description">${escapeHTML(item.description)}</p>` : ""}
       ${formatListingDate(item.created_at) ? `<p class="detail-posted-date">${listingCalendarIcon} ${escapeHTML(formatListingDate(item.created_at))}</p>` : ""}

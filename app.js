@@ -655,10 +655,7 @@ async function showDetail(item) {
     Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude)) &&
     Math.abs(Number(item.latitude)) <= 90 && Math.abs(Number(item.longitude)) <= 180;
   const locationName = [item.district, item.mahalla].filter(Boolean).join(", ");
-  const smsNumber = String(item.phone || "").replace(/[^+0-9]/g, "");
   const smsMessage = `Assalomu alaykum! IjaraMakon saytida ${item.district}, ${item.mahalla} hududidagi ${item.type} e'loningizni ko'rdim. Uy hali ijaraga berilmaganmi?`;
-  const smsURL = /^\+?[0-9]{9,15}$/.test(smsNumber)
-    ? `sms:${smsNumber}?body=${encodeURIComponent(smsMessage)}` : "";
   wrapper.className = "listing-detail-layout";
   wrapper.innerHTML = `
     <div class="detail-gallery-column">
@@ -670,9 +667,9 @@ async function showDetail(item) {
       <div class="detail-main-price">${money(item.price)} so'm <span>/ oy</span></div>
       <p class="listing-views">${listingIcon("eye")} <span id="detailViewCount">${Number(item.view_count || 0).toLocaleString("uz-UZ")}</span> marta ko'rilgan</p>
       <div class="detail-contact">
-        <a class="primary-btn" href="${escapeHTML(phoneURL(item.phone))}">📞 Qo'ng'iroq qilish</a>
-        ${smsURL ? `<a class="detail-sms-btn" href="${escapeHTML(smsURL)}" aria-label="Uy egasiga SMS yozish">✉ SMS yozish</a>` : ""}
-        <span class="detail-phone">${escapeHTML(item.phone)}</span>
+        <button type="button" class="primary-btn detail-contact-action" data-action="call">📞 Qo'ng'iroq qilish</button>
+        <button type="button" class="detail-sms-btn detail-contact-action" data-action="sms">✉ SMS yozish</button>
+        <span class="detail-phone" id="verifiedContactPhone"></span>
       </div>
       <h3>Uy haqida ma'lumot</h3>
       <dl class="detail-facts">
@@ -706,8 +703,33 @@ async function showDetail(item) {
     if (photos.length === 1) wrapper.querySelectorAll(".gallery-arrow").forEach(btn=>btn.hidden=true);
   }
 
-  const link = wrapper.querySelector("a");
-  if (link && !phoneURL(item.phone)) link.remove();
+  wrapper.querySelectorAll(".detail-contact-action").forEach(button => {
+    button.onclick = async () => {
+      const token = readStorage("im_auth_token");
+      if (!token) {
+        openPhoneLogin();
+        return;
+      }
+      try {
+        const data = await api("/api/listings/" + encodeURIComponent(item.id) + "/contact", {
+          headers: {Authorization: "Bearer " + token}
+        });
+        const number = String(data.phone || "").replace(/[^+0-9]/g, "");
+        if (!phoneURL(number)) throw new Error("Telefon raqami mavjud emas");
+        $("verifiedContactPhone").textContent = number;
+        if (button.dataset.action === "call") {
+          window.location.href = phoneURL(number);
+        } else {
+          window.location.href = "sms:" + number + "?body=" + encodeURIComponent(smsMessage);
+        }
+      } catch(err) {
+        if (/avval Telegram|401|ruxsat/i.test(err.message)) {
+          localStorage.removeItem("im_auth_token");
+          openPhoneLogin();
+        } else toast(err.message);
+      }
+    };
+  });
 
   $("detailModal").classList.remove("hidden");
   if (hasCoordinates && typeof L !== "undefined") {
@@ -1668,3 +1690,55 @@ async function loadAdminOverview() {
   apply();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup();
 })();
+
+/* Verified Telegram phone sign-in: public browsing stays open, contact requires login. */
+let loginChallenge = "";
+function openPhoneLogin() {
+  const dialog = $("phoneLoginModal");
+  if (!dialog) return;
+  dialog.classList.remove("hidden");
+  $("phoneLoginPhone").focus();
+}
+function closePhoneLogin() { $("phoneLoginModal")?.classList.add("hidden"); }
+document.addEventListener("DOMContentLoaded", () => {
+  $("openPhoneLogin")?.addEventListener("click", openPhoneLogin);
+  $("closePhoneLogin")?.addEventListener("click", closePhoneLogin);
+  $("phoneLoginStart")?.addEventListener("click", async () => {
+    const phone = $("phoneLoginPhone").value.trim();
+    try {
+      const data = await api("/api/auth/telegram/start", {method:"POST",body:JSON.stringify({phone})});
+      loginChallenge = data.challenge;
+      $("phoneLoginStep2").classList.remove("hidden");
+      $("phoneLoginBot").href = data.bot_url;
+      $("phoneLoginCode").focus();
+      toast("Telegram botni oching, o'z raqamingizni ulashing va kodni kiriting");
+    } catch(e) { toast(e.message); }
+  });
+  $("phoneLoginVerify")?.addEventListener("click", async () => {
+    try {
+      const data = await api("/api/auth/telegram/verify", {
+        method:"POST",body:JSON.stringify({challenge:loginChallenge,code:$("phoneLoginCode").value.trim()})
+      });
+      writeStorage("im_auth_token",data.token);
+      $("phoneLoginCode").value="";
+      $("phoneLoginStep2").classList.add("hidden");
+      closePhoneLogin();
+      toast("Telegram orqali kirish muvaffaqiyatli! Endi uy egasi bilan bog'lanishingiz mumkin.");
+      const status = $("phoneLoginStatus");
+      if(status) status.textContent="✓ Telegram orqali tasdiqlangan: "+data.phone;
+    } catch(e) { toast(e.message); }
+  });
+  $("phoneLogout")?.addEventListener("click", async () => {
+    const token=readStorage("im_auth_token");
+    if(token) try {await api("/api/auth/logout",{method:"POST",headers:{Authorization:"Bearer "+token}});} catch(e){}
+    localStorage.removeItem("im_auth_token");
+    $("phoneLoginStatus").textContent="Mehmon sifatida ko'rish mumkin. Bog'lanish uchun Telegram orqali kiring.";
+    toast("Akkauntdan chiqildi");
+  });
+  const token=readStorage("im_auth_token");
+  if(token) api("/api/auth/me",{headers:{Authorization:"Bearer "+token}})
+    .then(data=>{
+      if(data.authenticated) $("phoneLoginStatus").textContent="✓ Telegram orqali tasdiqlangan: "+data.phone;
+      else localStorage.removeItem("im_auth_token");
+    }).catch(()=>{});
+});

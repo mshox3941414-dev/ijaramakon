@@ -629,3 +629,10 @@ html[data-mode="dark"][data-design="classic"] .appearance-options button.selecte
 .detail-sms-btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 18px;border:1px solid #b7cdea;border-radius:12px;background:#eff5ff;color:#1555a5;font-weight:700;text-decoration:none;transition:background .15s ease}
 .detail-sms-btn:hover{background:#dfecff}
 .detail-sms-btn:focus-visible{outline:3px solid #4387df;outline-offset:2px}
+
+.phone-login-box{max-width:460px!important;width:min(94vw,460px)!important;padding:28px!important}
+.phone-login-box .field{margin:18px 0}
+.phone-login-box .primary-btn,.phone-login-box .secondary-btn{display:inline-flex;align-items:center;justify-content:center;margin:5px 0;text-decoration:none}
+.phone-login-profile{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.phone-login-profile p{flex-basis:100%;margin:0}
+.detail-contact-action{cursor:pointer;font:inherit}

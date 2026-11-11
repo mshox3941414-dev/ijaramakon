@@ -702,3 +702,51 @@ body.phone-login-open{overflow:hidden}
 @media(min-width:901px){.top-utility-bar{position:sticky;top:0;z-index:990}.header{position:sticky;top:37px;z-index:989;background:var(--white,#fff)}.main-nav{position:sticky;top:116px;z-index:988;box-shadow:0 6px 22px rgba(30,63,105,.1)}.nav-btn{min-width:0}}
 @media(max-width:900px){.top-utility-caption{display:none}.top-utility-inner{gap:8px}.top-socials{gap:4px}.header-actions{flex-wrap:wrap!important;justify-content:flex-end}}
 @media(max-width:600px){.top-utility-inner{padding:5px 12px}.top-support{font-size:10px}.top-socials span{width:21px;height:21px;font-size:12px}.header-tour-btn{padding:7px!important}.header-tour-btn span:not(.header-action-icon){display:none}.header-lang{max-width:140px!important;font-size:12px}}
+
+/* Header refinements: real flag images, brand icons, readable support number */
+.top-support{font-size:15px!important;font-weight:800!important;letter-spacing:.01em}
+.top-socials span{border:1px solid rgba(255,255,255,.35);width:29px;height:29px}
+.top-socials img{display:block;width:16px;height:16px;filter:brightness(0) invert(1);object-fit:contain}
+.location-pill{display:inline-flex;align-items:center;gap:6px}
+.location-modern-icon{color:#2563eb;flex-shrink:0}
+.header-lang-wrap{position:relative;display:inline-flex;align-items:center;z-index:991}
+.header-lang{display:inline-flex!important;align-items:center;justify-content:space-between;gap:8px;max-width:none!important;min-width:151px;white-space:nowrap}
+.language-flag,.language-options img{width:22px;height:15px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.12);flex-shrink:0}
+.language-options{position:absolute;top:calc(100% + 7px);right:0;min-width:195px;padding:6px;border:1px solid var(--border,#dce6f4);border-radius:13px;background:var(--white,#fff);box-shadow:0 14px 36px rgba(15,30,60,.19);z-index:1001}
+.language-options.hidden{display:none}
+.language-options button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:var(--text,#152943);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.language-options button:hover,.language-options button[aria-pressed="true"]{background:var(--light-blue,#eaf2ff);color:var(--text,#152943)}
+/* Dark mode: every dialog, detail, menu and button must retain legible contrast */
+html[data-mode="dark"] #detailModal .modal-box,
+html[data-mode="dark"] .modal-box{background:#19263b!important;color:#f1f6ff!important;border-color:#394b66!important}
+html[data-mode="dark"] #detailModal .detail-information-column,
+html[data-mode="dark"] #detailModal .detail-information-column h2,
+html[data-mode="dark"] #detailModal .detail-information-column h3,
+html[data-mode="dark"] #detailModal .detail-facts dd,
+html[data-mode="dark"] #detailModal .detail-phone,
+html[data-mode="dark"] #detailModal .detail-heading,
+html[data-mode="dark"] #detailModal .detail-description{color:#f1f6ff!important}
+html[data-mode="dark"] #detailModal .detail-facts dt,
+html[data-mode="dark"] #detailModal .detail-main-price span,
+html[data-mode="dark"] #detailModal .detail-location-name{color:#b7c9e3!important}
+html[data-mode="dark"] #detailModal .detail-main-price{color:#8bbcff!important}
+html[data-mode="dark"] #detailModal .detail-facts>div{border-color:#34445f!important}
+html[data-mode="dark"] #detailModal .detail-chip{background:#2a405f!important;color:#e7f1ff!important}
+html[data-mode="dark"] #detailModal .detail-location-empty{background:#243651!important;color:#d8e5f7!important}
+html[data-mode="dark"] #detailModal .detail-sms-btn{background:#263d5e!important;color:#e6f1ff!important;border-color:#5d7ca7!important}
+html[data-mode="dark"] #detailModal .modal-close{background:#344660!important;color:#fff!important}
+html[data-mode="dark"] .header-lang,
+html[data-mode="dark"] .header-tour-btn{background:#263b59!important;color:#eef5ff!important;border-color:#456183!important}
+html[data-mode="dark"] .header-action-icon{background:#35537b!important;color:#f0f7ff!important}
+html[data-mode="dark"] .language-options{background:#1c2a40!important;border-color:#456183!important}
+html[data-mode="dark"] .language-options button{color:#f1f6ff!important}
+html[data-mode="dark"] .language-options button:hover,
+html[data-mode="dark"] .language-options button[aria-pressed="true"]{background:#314b70!important}
+html[data-mode="dark"] .main-nav{background:#1b2a40!important;border-color:#3b4f6b!important}
+html[data-mode="dark"] .nav-btn{color:#e3edff!important}
+html[data-mode="dark"] .nav-btn.active{background:#314f79!important;color:#fff!important}
+html[data-mode="dark"] .listing-actions .secondary-btn{background:#283c59!important;color:#e8f2ff!important;border-color:#405a7b!important}
+html[data-mode="dark"] .listing-actions .primary-btn{color:#fff!important}
+html[data-mode="dark"] .header{background:#182337!important}
+html[data-mode="dark"] .location-pill{background:#263a55!important;color:#e4eeff!important;border-color:#3d5271!important}
+@media(max-width:600px){.top-support{font-size:12px!important}.top-socials span{width:24px;height:24px}.top-socials img{width:14px;height:14px}.header-lang{min-width:124px;gap:5px;padding:7px!important}.language-flag{width:20px;height:14px}}
